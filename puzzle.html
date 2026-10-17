@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>그림 맞추기 퍼즐</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: white; touch-action: manipulation; }
+        #puzzleBoard { aspect-ratio: 1 / 1; }
+        .tile { 
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; 
+            background-size: cover; border: 1px solid #1e293b; position: relative;
+        }
+        .tile:active { transform: scale(0.95); }
+        .tile.selected { border: 4px solid #38bdf8; filter: drop-shadow(0 0 8px #38bdf8); z-index: 10; }
+        .tile-number {
+            position: absolute; top: 4px; left: 4px;
+            background: rgba(15, 23, 42, 0.8); color: white;
+            font-size: 0.75rem; font-weight: bold; padding: 2px 6px;
+            border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen py-6 px-4">
+
+    <!-- 상단 네비게이션 (뒤로가기) -->
+    <div class="w-full max-w-md flex items-center justify-between mb-6">
+        <button onclick="location.href='index.html'" class="text-slate-400 hover:text-white flex items-center gap-2 font-bold bg-slate-800 px-4 py-2 rounded-xl">
+            <i class="fa-solid fa-arrow-left"></i> 짝꿍 앱으로 돌아가기
+        </button>
+    </div>
+
+    <div class="w-full max-w-md bg-slate-900 rounded-3xl p-5 border border-slate-700 shadow-2xl flex flex-col gap-5">
+        
+        <!-- 헤더 및 컨트롤 -->
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-puzzle-piece text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-emerald-400">두뇌 퍼즐</h1>
+                    <p class="text-slate-400 text-xs">치매 예방 그림 맞추기</p>
+                </div>
+            </div>
+            <!-- 조각 개수 난이도 -->
+            <select id="difficulty" onchange="initGame()" class="bg-slate-800 border border-slate-600 text-white text-sm rounded-lg px-3 py-2 outline-none">
+                <option value="2" selected>2x2 (아주 쉬움)</option>
+                <option value="3">3x3 (쉬움)</option>
+                <option value="4">4x4 (보통)</option>
+                <option value="5">5x5 (어려움)</option>
+            </select>
+        </div>
+
+        <!-- 그림 종류 선택 (단순 도형부터 복잡한 명화까지) -->
+        <div class="bg-slate-800 p-3 rounded-2xl border border-slate-700">
+            <label class="text-xs text-slate-400 font-bold mb-2 block">그림 선택 (쉬운 것부터 도전하세요)</label>
+            <select id="imageSelect" onchange="initGame()" class="w-full bg-slate-900 border border-slate-600 text-white text-sm rounded-lg px-3 py-2.5 outline-none font-bold">
+                <!-- SVG 데이터로 그린 단순 도형들 -->
+                <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='600' height='600' style='background:%23fef3c7;'><circle cx='50' cy='50' r='40' fill='%23ef4444'/><circle cx='35' cy='40' r='5' fill='white'/><circle cx='65' cy='40' r='5' fill='white'/><path d='M 30 60 Q 50 80 70 60' stroke='white' stroke-width='5' fill='transparent' stroke-linecap='round'/></svg>">
+                    🔴 빨간 동그라미 (1단계)
+                </option>
+                <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='600' height='600' style='background:%23e0f2fe;'><rect x='25' y='45' width='50' height='50' fill='%233b82f6'/><polygon points='10,45 50,10 90,45' fill='%231d4ed8'/><rect x='40' y='65' width='20' height='30' fill='%23fbbf24'/><circle cx='80' cy='20' r='10' fill='%23fef08a'/></svg>">
+                    🟦 파란 네모 집 (2단계)
+                </option>
+                <option value="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='600' height='600' style='background:%23f0fdf4;'><rect x='15' y='50' width='70' height='20' rx='5' fill='%23eab308'/><rect x='25' y='30' width='50' height='20' rx='5' fill='%23eab308'/><circle cx='30' cy='70' r='10' fill='%23333'/><circle cx='70' cy='70' r='10' fill='%23333'/><rect x='30' y='35' width='15' height='15' fill='%23bfdbfe'/><rect x='55' y='35' width='15' height='15' fill='%23bfdbfe'/></svg>">
+                    🚕 노란 자동차 (3단계)
+                </option>
+                <!-- 실제 복잡한 명화 사진 -->
+                <option value="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=600&q=80">
+                    🖼️ 복잡한 명화 (4단계)
+                </option>
+            </select>
+        </div>
+
+        <!-- 기록 상태창 -->
+        <div class="grid grid-cols-3 gap-2 text-center bg-slate-800 p-3 rounded-2xl border border-slate-700">
+            <div>
+                <span class="text-slate-400 text-xs block mb-0.5"><i class="fa-regular fa-clock"></i> 시간</span>
+                <span id="timeDisplay" class="text-white font-black text-lg">00:00</span>
+            </div>
+            <div class="border-x border-slate-700">
+                <span class="text-slate-400 text-xs block mb-0.5"><i class="fa-solid fa-arrows-rotate"></i> 이동</span>
+                <span id="movesDisplay" class="text-white font-black text-lg">0</span>
+            </div>
+            <button onclick="toggleNumbers()" id="numBtn" class="text-cyan-400 font-bold text-sm bg-slate-900 rounded-lg border border-cyan-900 active:scale-95 transition">
+                # 번호 ON
+            </button>
+        </div>
+
+        <!-- 버튼 영역 -->
+        <div class="flex gap-2">
+            <button onmousedown="showPreview()" onmouseup="hidePreview()" ontouchstart="showPreview()" ontouchend="hidePreview()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-xl font-bold border border-slate-600 active:scale-95 transition text-sm">
+                <i class="fa-solid fa-eye text-emerald-400"></i> 꾹 눌러 원본 보기
+            </button>
+            <button onclick="initGame()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition text-sm">
+                <i class="fa-solid fa-shuffle"></i> 다시 섞기
+            </button>
+        </div>
+
+        <!-- 퍼즐 게임 보드 -->
+        <div class="relative w-full bg-slate-950 rounded-xl p-1.5 shadow-inner border border-slate-800">
+            <div id="puzzleBoard" class="grid w-full h-full gap-0.5 relative"></div>
+            <div id="previewImage" class="absolute inset-1.5 bg-cover bg-center hidden rounded-lg z-20 pointer-events-none"></div>
+
+            <div id="winScreen" class="absolute inset-0 bg-slate-900/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg opacity-0 pointer-events-none transition-opacity duration-500 z-30">
+                <h2 class="text-3xl font-black text-emerald-400 mb-1">성공!</h2>
+                <p id="winMessage" class="text-slate-300 mb-5 text-sm font-bold"></p>
+                <button onclick="initGame()" class="bg-emerald-500 px-6 py-2.5 rounded-full font-black text-white shadow-lg active:scale-95 transition-transform text-sm">
+                    새 게임 시작
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const board = document.getElementById('puzzleBoard');
+        const diffSelect = document.getElementById('difficulty');
+        const imgSelect = document.getElementById('imageSelect');
+        const movesDisplay = document.getElementById('movesDisplay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const winScreen = document.getElementById('winScreen');
+        const previewImage = document.getElementById('previewImage');
+        const numBtn = document.getElementById('numBtn');
+
+        let size = 2, tiles = [], selectedTile = null;
+        let moves = 0, isWon = false, showNum = true;
+        let timer, seconds = 0;
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = (s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            seconds = 0;
+            timeDisplay.innerText = "00:00";
+            timer = setInterval(() => {
+                if(!isWon) { seconds++; timeDisplay.innerText = formatTime(seconds); }
+            }, 1000);
+        }
+
+        function toggleNumbers() {
+            showNum = !showNum;
+            numBtn.innerText = showNum ? "# 번호 ON" : "# 번호 OFF";
+            numBtn.className = showNum ? "text-cyan-400 font-bold text-sm bg-slate-900 rounded-lg border border-cyan-900 active:scale-95 transition" : "text-slate-500 font-bold text-sm bg-slate-900 rounded-lg border border-slate-700 active:scale-95 transition";
+            document.querySelectorAll('.tile-number').forEach(el => el.style.display = showNum ? 'block' : 'none');
+        }
+
+        function showPreview() { if(!isWon) previewImage.classList.remove('hidden'); }
+        function hidePreview() { previewImage.classList.add('hidden'); }
+
+        function initGame() {
+            size = parseInt(diffSelect.value);
+            const imgUrl = imgSelect.value;
+            previewImage.style.backgroundImage = `url("${imgUrl}")`;
+            
+            board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            board.innerHTML = '';
+            tiles = []; moves = 0; isWon = false; selectedTile = null;
+            movesDisplay.innerText = moves;
+            winScreen.classList.remove('opacity-100', 'pointer-events-auto');
+            winScreen.classList.add('opacity-0', 'pointer-events-none');
+
+            for (let i = 0; i < size * size; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile rounded-sm';
+                tile.dataset.index = i;
+                tile.style.backgroundImage = `url("${imgUrl}")`;
+                
+                const x = (i % size) * (100 / (size - 1));
+                const y = Math.floor(i / size) * (100 / (size - 1));
+                tile.style.backgroundSize = `${size * 100}% ${size * 100}%`;
+                tile.style.backgroundPosition = `${x}% ${y}%`;
+                
+                // 번호 표시 요소 추가
+                const num = document.createElement('div');
+                num.className = 'tile-number';
+                num.innerText = i + 1;
+                num.style.display = showNum ? 'block' : 'none';
+                tile.appendChild(num);
+                
+                tile.addEventListener('click', () => handleTileClick(tile));
+                tiles.push(tile);
+                board.appendChild(tile);
+            }
+            shuffleTiles();
+            startTimer();
+        }
+
+        function shuffleTiles() {
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                swapNodes(tiles[i], tiles[j]);
+            }
+            tiles = Array.from(board.children);
+        }
+
+        function swapNodes(n1, n2) {
+            const s1 = n1.nextSibling === n2 ? n1 : n1.nextSibling;
+            n2.parentNode.insertBefore(n1, n2);
+            n1.parentNode.insertBefore(n2, s1);
+        }
+
+        function handleTileClick(tile) {
+            if (isWon) return;
+            if (!selectedTile) {
+                selectedTile = tile; tile.classList.add('selected');
+            } else {
+                if (selectedTile !== tile) {
+                    swapNodes(selectedTile, tile);
+                    moves++; movesDisplay.innerText = moves;
+                    tiles = Array.from(board.children);
+                    checkWin();
+                }
+                selectedTile.classList.remove('selected'); selectedTile = null;
+            }
+        }
+
+        function checkWin() {
+            const isComplete = tiles.every((t, i) => parseInt(t.dataset.index) === i);
+            if (isComplete) {
+                isWon = true; clearInterval(timer);
+                document.getElementById('winMessage').innerText = `${moves}번 이동 / ${formatTime(seconds)} 소요`;
+                winScreen.classList.remove('opacity-0', 'pointer-events-none');
+                winScreen.classList.add('opacity-100', 'pointer-events-auto');
+            }
+        }
+        
+        // 페이지 로딩 완료 시 게임 초기화
+        window.onload = initGame;
+    </script>
+</body>
+</html>

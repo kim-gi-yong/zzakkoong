@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시니어 통합 라이프 케어 - 짝꿍</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-gray-100 flex justify-center min-h-screen">
+  <div class="w-full max-w-md bg-emerald-50/40 min-h-screen flex flex-col shadow-2xl relative pb-28">
+    
+    <!-- 상단 헤더 -->
+    <header class="bg-emerald-600 text-white py-4 px-5 flex items-center justify-between shadow sticky top-0 z-30">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-hand-holding-hand text-2xl text-yellow-300"></i>
+        <h1 class="text-2xl font-black tracking-tight">짝꿍 - 내 곁에 든든한 비서</h1>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="openApiKeyModal()" class="bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-full flex items-center gap-1 shadow">
+          <i class="fa-solid fa-gear"></i> 관리자
+        </button>
+      </div>
+    </header>
+
+    <main class="p-4 space-y-5">
+      <!-- 말벗 대화창 -->
+      <section class="bg-white rounded-3xl p-5 border-2 border-indigo-200 shadow-sm flex flex-col items-center">
+        <p class="text-2xl font-black text-gray-800 mb-1">디지털 짝꿍 (AI 말벗)</p>
+        <p id="voiceStatus" class="text-base text-gray-500 mb-3 font-semibold text-center">
+          "오늘 점심 뭐 먹을까?" 편하게 말씀하세요
+        </p>
+
+        <button id="micBtn" onclick="toggleSpeechRecognition()" class="w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-600 to-blue-500 text-white flex flex-col items-center justify-center shadow-lg active:scale-95 transition transform duration-150 my-1">
+          <i id="micIcon" class="fa-solid fa-microphone text-5xl mb-1"></i>
+          <span id="micLabel" class="text-base font-black">말씀하기</span>
+        </button>
+
+        <div class="w-full mt-4 space-y-3">
+          <div id="userChatBox" class="bg-indigo-50 border border-indigo-200 rounded-2xl p-3 text-right hidden">
+            <span class="text-xs font-bold text-indigo-500 block mb-0.5">어르신 말씀</span>
+            <p id="userText" class="text-xl font-bold text-gray-900"></p>
+          </div>
+          <div id="aiChatBox" class="bg-emerald-50 border border-emerald-300 rounded-2xl p-3.5 text-left hidden">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
+              <span class="text-sm font-bold text-emerald-800">디지털 짝꿍의 대답</span>
+            </div>
+            <p id="aiText" class="text-xl font-black text-emerald-950 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <div class="w-full mt-4 flex gap-2">
+          <input type="text" id="manualInput" placeholder="글자로 입력하셔도 됩니다" class="flex-1 border-2 border-gray-300 rounded-xl px-4 py-2.5 text-base focus:border-indigo-500 outline-none" onkeydown="if(event.key === 'Enter') sendManualMessage()">
+          <button onclick="sendManualMessage()" class="bg-indigo-600 active:bg-indigo-700 text-white font-bold px-4 rounded-xl text-base shrink-0">전송</button>
+        </div>
+      </section>
+
+      <!-- 동네 짝꿍 (4대 생활 케어) -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-xl font-black text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-people-carry-box text-emerald-600"></i> 동네 짝꿍 호출하기
+          </h2>
+          <span class="text-sm text-gray-500 font-bold">사람이 직접 찾아가요</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="processUserInput('동행')" class="bg-purple-50 hover:bg-purple-100 border-2 border-purple-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
+            <div class="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
+              <i class="fa-solid fa-person-walking-with-cane"></i>
+            </div>
+            <div>
+              <span class="text-xl font-black text-purple-950 block">병원 동행</span>
+              <span class="text-xs font-bold text-purple-700">진료실 픽업 및 약 수령</span>
+            </div>
+          </button>
+
+          <button onclick="processUserInput('집수리')" class="bg-amber-50 hover:bg-amber-100 border-2 border-amber-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
+            <div class="w-11 h-11 bg-amber-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
+              <i class="fa-solid fa-wrench"></i>
+            </div>
+            <div>
+              <span class="text-xl font-black text-amber-950 block">만능 집수리</span>
+              <span class="text-xs font-bold text-amber-800">전구 교체, 무거운 짐</span>
+            </div>
+          </button>
+
+          <button onclick="processUserInput('반찬')" class="bg-teal-50 hover:bg-teal-100 border-2 border-teal-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
+            <div class="w-11 h-11 bg-teal-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
+              <i class="fa-solid fa-bowl-food"></i>
+            </div>
+            <div>
+              <span class="text-xl font-black text-teal-950 block">건강 반찬</span>
+              <span class="text-xs font-bold text-teal-700">저염/연화식 정기 배달</span>
+            </div>
+          </button>
+
+          <button onclick="processUserInput('청소')" class="bg-sky-50 hover:bg-sky-100 border-2 border-sky-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
+            <div class="w-11 h-11 bg-sky-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
+              <i class="fa-solid fa-broom"></i>
+            </div>
+            <div>
+              <span class="text-xl font-black text-sky-950 block">가사 돌봄</span>
+              <span class="text-xs font-bold text-sky-700">욕실 청소, 분리수거</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- 외부 앱 실전 연동 및 퍼즐 -->
+      <section class="space-y-3 pt-1">
+        <h2 class="text-xl font-black text-gray-900 flex items-center gap-2 px-1">
+          <i class="fa-solid fa-link text-amber-500"></i> 안심 스마트 연결
+        </h2>
+
+        <!-- [핵심] 실제 카카오 T 앱을 엽니다 -->
+        <button onclick="openKakaoTaxi()" class="w-full bg-amber-400 hover:bg-amber-500 active:scale-[0.98] text-gray-950 font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition border-2 border-amber-500">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl text-amber-600 shadow-sm">
+              <i class="fa-solid fa-taxi"></i>
+            </div>
+            <div class="text-left">
+              <span class="text-xl font-black block">카카오 택시 호출</span>
+              <span class="text-sm font-bold text-gray-800">진짜 카카오T 앱 켜기</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xl text-gray-700"></i>
+        </button>
+
+        <button onclick="location.href='puzzle.html'" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 active:scale-[0.98] text-white font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl text-white backdrop-blur-sm shadow-inner">
+              <i class="fa-solid fa-puzzle-piece"></i>
+            </div>
+            <div class="text-left">
+              <span class="text-xl font-black block text-white">치매 예방 퍼즐</span>
+              <span class="text-sm font-semibold text-indigo-100">명화 그림 맞추기 게임</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xl text-white/50"></i>
+        </button>
+      </section>
+    </main>
+
+    <!-- 팝업 모달창 -->
+    <div id="serviceModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+        <div id="modalIcon" class="w-20 h-20 mx-auto rounded-full bg-emerald-100 flex items-center justify-center text-4xl text-emerald-600">
+          <i class="fa-solid fa-bell"></i>
+        </div>
+        <h3 id="modalTitle" class="text-2xl font-black text-gray-900">안내</h3>
+        <p id="modalDesc" class="text-lg font-bold text-gray-700 leading-relaxed"></p>
+        <div class="pt-2 flex gap-3">
+          <button onclick="closeModal()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-3.5 rounded-2xl text-lg">취소</button>
+          <!-- 확인을 누르면 대표님 폰으로 실제 알림이 갑니다 -->
+          <button onclick="confirmAndSendOrder()" class="flex-1 bg-emerald-600 text-white font-black py-3.5 rounded-2xl text-lg shadow">신청하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 관리자(API 및 텔레그램) 설정 모달 -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-left space-y-4">
+        <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
+          <i class="fa-solid fa-gear text-emerald-600"></i> 관리자 실전 설정
+        </h3>
+        
+        <div>
+          <label class="text-xs font-bold text-gray-500">1. Gemini API 키 (말벗 용도)</label>
+          <input type="password" id="geminiApiKey" placeholder="AIzaSy..." class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm outline-none mt-1">
+        </div>
+        
+        <div class="pt-2 border-t border-gray-100">
+          <label class="text-xs font-bold text-rose-500">2. 텔레그램 봇 토큰 (주문 수신용)</label>
+          <input type="password" id="telegramToken" placeholder="예: 123456:ABC-DEF..." class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm outline-none mt-1">
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-rose-500">3. 텔레그램 Chat ID (대표님 고유번호)</label>
+          <input type="text" id="telegramChatId" placeholder="예: 123456789" class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm outline-none mt-1">
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeApiKeyModal()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl">닫기</button>
+          <button onclick="saveAdminSettings()" class="flex-1 bg-emerald-600 text-white font-black py-2.5 rounded-xl shadow">저장하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentServiceRequested = "";
+
+    function speakText(text) {
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ko-KR'; utterance.rate = 0.9;
+          window.speechSynthesis.speak(utterance);
+        }
+      } catch (e) {}
+    }
+// 1. 카카오 택시 실제 연결 함수 (PC/모바일 자동 구분)
+    function openKakaoTaxi() {
+      // 지금 접속한 기기가 스마트폰인지 컴퓨터(PC)인지 확인합니다.
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        speakText('카카오 택시 앱을 연결합니다.');
+        // 스마트폰일 경우: 진짜 카카오T 앱을 즉시 엽니다.
+        location.href = "kakaot://"; 
+        
+        // 만약 폰에 카카오 T 앱이 안 깔려있다면 앱 설치 화면(앱스토어/플레이스토어)으로 넘깁니다.
+        setTimeout(() => {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            if (/android/i.test(userAgent)) {
+                location.href = "market://details?id=com.kakao.taxi";
+            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                location.href = "https://itunes.apple.com/kr/app/id981110422";
+            }
+        }, 1500);
+      } else {
+        // 컴퓨터(PC)일 경우: 안내 메시지를 띄웁니다.
+        speakText('택시 호출은 스마트폰의 카카오 T 앱에서만 가능합니다.');
+        alert('택시 호출 기능은 스마트폰에서 카카오 T 앱을 통해서만 이용하실 수 있습니다.\n스마트폰으로 접속해 주세요.');
+      }
+    }
+    
+    function openModal(title, desc, iconClass, colorClass) {
+      currentServiceRequested = title; // 현재 어떤 서비스를 요청했는지 기록
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalDesc').innerText = desc;
+      const modalIcon = document.getElementById('modalIcon');
+      modalIcon.className = `w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl ${colorClass}`;
+      modalIcon.innerHTML = `<i class="${iconClass}"></i>`;
+      document.getElementById('serviceModal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('serviceModal').classList.add('hidden'); }
+
+    // 2. [핵심] 실제 텔레그램으로 주문 전송하는 함수
+    async function confirmAndSendOrder() {
+      const token = localStorage.getItem('telegram_token');
+      const chatId = localStorage.getItem('telegram_chat_id');
+      
+      closeModal();
+      
+      if (!token || !chatId) {
+        alert(`[테스트 완료]\n어르신이 '${currentServiceRequested}'을(를) 요청하셨습니다.\n\n*실제 대표님 폰으로 알림을 받으려면 상단 [관리자] 설정에서 텔레그램 정보를 입력하세요.`);
+        return;
+      }
+
+      // 텔레그램으로 쏠 실제 메시지 내용
+      const messageText = `🚨 [짝꿍 호출 알림]\n\n고객님께서 [${currentServiceRequested}] 서비스를 요청하셨습니다!\n빠르게 연락하여 스케줄을 확정해 주세요.`;
+
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: messageText })
+        });
+        
+        if(res.ok) {
+          speakText('신청이 성공적으로 접수되었습니다. 동네 짝꿍 매니저가 곧 연락드립니다.');
+          alert('대표님(매니저)의 스마트폰으로 호출이 전송되었습니다!');
+        } else {
+          alert('텔레그램 전송 실패. 설정 정보를 확인하세요.');
+        }
+      } catch (err) {
+        alert('네트워크 오류로 전송하지 못했습니다.');
+      }
+    }
+
+    // 관리자 모달 제어
+    function openApiKeyModal() {
+      document.getElementById('geminiApiKey').value = localStorage.getItem('gemini_api_key') || '';
+      document.getElementById('telegramToken').value = localStorage.getItem('telegram_token') || '';
+      document.getElementById('telegramChatId').value = localStorage.getItem('telegram_chat_id') || '';
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+    
+    function closeApiKeyModal() { document.getElementById('apiKeyModal').classList.add('hidden'); }
+    
+    function saveAdminSettings() {
+      localStorage.setItem('gemini_api_key', document.getElementById('geminiApiKey').value.trim());
+      localStorage.setItem('telegram_token', document.getElementById('telegramToken').value.trim());
+      localStorage.setItem('telegram_chat_id', document.getElementById('telegramChatId').value.trim());
+      alert('관리자 실전 설정이 저장되었습니다!');
+      closeApiKeyModal();
+    }
+
+    async function processUserInput(query) {
+      if (!query || query.trim() === '') return;
+      const trimmed = query.trim();
+      const lower = trimmed.toLowerCase();
+      
+      document.getElementById('userText').innerText = trimmed;
+      document.getElementById('userChatBox').classList.remove('hidden');
+      document.getElementById('voiceStatus').innerText = "생각 중...";
+
+      // 동네 짝꿍 매칭 감지
+      if (lower.includes('동행') || lower.includes('병원 가줘')) {
+        openModal("병원 동행 서비스", "집 앞에서 만나 진료실 동행, 약국 수령까지 함께해 드립니다. 매니저를 부를까요?", "fa-solid fa-person-walking-with-cane", "text-purple-600 bg-purple-100");
+        showReply("병원 동행 매니저를 연결해 드릴게요."); return;
+      }
+      if (lower.includes('수리') || lower.includes('전등') || lower.includes('형광등')) {
+        openModal("만능 집수리", "형광등 교체, 무거운 짐 이동 등을 안전하게 해결해 드립니다.", "fa-solid fa-wrench", "text-amber-600 bg-amber-100");
+        showReply("집수리 전문가를 불러드릴게요."); return;
+      }
+      if (lower.includes('반찬') || lower.includes('식단')) {
+        openModal("건강 맞춤 반찬", "저염/영양 안심 식단을 집 앞까지 배송해 드립니다.", "fa-solid fa-bowl-food", "text-teal-600 bg-teal-100");
+        showReply("영양 반찬 배달을 안내해 드릴게요."); return;
+      }
+      if (lower.includes('청소') || lower.includes('욕실')) {
+        openModal("가사 안심 돌봄", "미끄러운 욕실 청소, 분리수거를 도와드립니다.", "fa-solid fa-broom", "text-sky-600 bg-sky-100");
+        showReply("가사 돌봄 도우미를 연결해 드릴게요."); return;
+      }
+      if (lower.includes('택시')) {
+        openKakaoTaxi(); 
+        showReply("카카오 택시 앱을 켜드릴게요."); return;
+      }
+
+      // Gemini AI 대화 (1.5-pro 모델)
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (apiKey) {
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: `너는 시니어 비서 '짝꿍'이야. 2~3문장으로 다정하게 대답해 줘. 질문: ${trimmed}` }] }]
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.candidates) {
+            showReply(data.candidates[0].content.parts[0].text); return;
+          }
+        } catch (err) {}
+      }
+      
+      showReply(`"${trimmed}" 말씀하셨군요! 어르신 곁에 늘 '짝꿍'이 있으니 든든하게 생각하세요.`);
+    }
+
+    function showReply(reply) {
+      document.getElementById('aiText').innerText = reply;
+      document.getElementById('aiChatBox').classList.remove('hidden');
+      document.getElementById('voiceStatus').innerText = "마이크를 누르고 말씀해 보세요";
+      speakText(reply);
+    }
+
+    function sendManualMessage() {
+      const input = document.getElementById('manualInput');
+      if (input.value.trim() !== '') { processUserInput(input.value); input.value = ''; }
+    }
+
+    // 음성 인식(STT)
+    let recognition = null;
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new window.webkitSpeechRecognition();
+      recognition.lang = 'ko-KR';
+      recognition.onstart = () => document.getElementById('voiceStatus').innerText = "네, 지금 말씀하세요!";
+      recognition.onresult = (event) => processUserInput(event.results[0][0].transcript);
+      recognition.onerror = () => document.getElementById('voiceStatus').innerText = "잘 듣지 못했어요. 다시 눌러주세요.";
+      recognition.onend = () => document.getElementById('voiceStatus').innerText = "마이크를 누르고 말씀해 보세요";
+    }
+
+    function toggleSpeechRecognition() {
+      if (recognition) recognition.start();
+    }
+  </script>
+</body>
+</html>
