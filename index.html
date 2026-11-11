@@ -3,201 +3,357 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>시니어 통합 라이프 케어 - 짝꿍</title>
+  <title>짝꿍 2.0 - 시니어 상생 돌봄 & 디지털 사랑방</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    body { overflow-y: auto; -webkit-overflow-scrolling: touch; font-size: 20px; color: #111827; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .tap { min-height: 64px; }
+    .chip-on { outline: 4px solid #047857; outline-offset: 2px; }
+    button:disabled { opacity: .55; }
   </style>
 </head>
 <body class="bg-gray-100 flex justify-center min-h-screen">
   <div class="w-full max-w-md bg-emerald-50/40 min-h-screen flex flex-col shadow-2xl relative pb-28">
-    
-    <!-- 상단 헤더 -->
-    <header class="bg-emerald-600 text-white py-4 px-5 flex items-center justify-between shadow sticky top-0 z-30">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-hand-holding-hand text-2xl text-yellow-300"></i>
-        <h1 class="text-2xl font-black tracking-tight">짝꿍 - 내 곁에 든든한 비서</h1>
+
+    <!-- 상단 고정 헤더 -->
+    <header class="bg-emerald-700 text-white py-3 px-4 flex items-center justify-between shadow sticky top-0 z-30">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-hand-holding-hand text-3xl text-yellow-300"></i>
+        <h1 class="text-[28px] font-black tracking-tight">짝꿍 2.0</h1>
       </div>
       <div class="flex gap-2">
-        <button onclick="openApiKeyModal()" class="bg-emerald-700 active:bg-emerald-800 text-white text-xs font-bold px-2.5 py-1.5 rounded-full flex items-center gap-1 shadow">
-          <i class="fa-solid fa-gear"></i> 관리자
+        <button onclick="openRoleScreen()" class="tap bg-emerald-900 active:bg-black text-white text-base font-bold px-3 rounded-2xl flex flex-col items-center justify-center leading-tight shadow">
+          <i class="fa-solid fa-repeat text-lg"></i>
+          <span id="roleBadge">역할 바꾸기</span>
+        </button>
+        <button onclick="openApiKeyModal()" class="tap bg-emerald-900 active:bg-black text-white text-base font-bold px-3 rounded-2xl flex flex-col items-center justify-center leading-tight shadow">
+          <i class="fa-solid fa-gear text-lg"></i> 관리자
         </button>
       </div>
     </header>
 
-    <main class="p-4 space-y-5">
-      
-      <!-- 1. 건강 안심 케어 (복원 완료!) -->
-      <section class="bg-white rounded-3xl p-5 border-2 border-emerald-500 shadow-sm space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-gray-100">
-          <span class="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <i class="fa-solid fa-shield-heart text-emerald-600"></i> 24시간 건강 안심
-          </span>
-          <span class="bg-emerald-100 text-emerald-800 text-sm font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> 정상 상태
-          </span>
-        </div>
+    <main class="p-4">
 
-        <div class="grid grid-cols-2 gap-3 pt-1">
-          <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-3.5 text-center cursor-pointer" onclick="processUserInput('내 심박수 어때')">
-            <span class="text-gray-600 text-base font-bold block mb-1">실시간 심박수</span>
-            <div class="text-2xl font-black text-rose-600 flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-heart animate-bounce"></i>
-              <span>72</span> <span class="text-base font-bold text-gray-700">회/분</span>
-            </div>
-          </div>
-          <div class="bg-blue-50 border-2 border-blue-300 rounded-2xl p-3.5 text-center cursor-pointer" onclick="processUserInput('혈압 어때')">
-            <span class="text-gray-600 text-base font-bold block mb-1">최근 혈압</span>
-            <div class="text-2xl font-black text-blue-600 flex items-center justify-center gap-1.5">
-              <i class="fa-solid fa-droplet"></i>
-              <span>120/80</span>
-            </div>
-          </div>
-        </div>
+      <!-- ============ 탭1: 노노케어 도움매칭 ============ -->
+      <div id="tab1" class="space-y-5">
 
-        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3.5 flex items-center justify-between px-6 cursor-pointer" onclick="processUserInput('오늘 얼마나 걸었어')">
-          <span class="text-gray-700 text-lg font-bold">오늘 걸음 수</span>
-          <span class="text-2xl font-black text-amber-700 flex items-center gap-2">
-            <i class="fa-solid fa-person-walking text-2xl"></i>
-            4,532 <span class="text-base font-bold text-gray-600">걸음</span>
-          </span>
-        </div>
-      </section>
-
-      <!-- 2. 디지털 짝꿍 (AI 말벗) -->
-      <section class="bg-white rounded-3xl p-5 border-2 border-indigo-200 shadow-sm flex flex-col items-center">
-        <p class="text-2xl font-black text-gray-800 mb-1">디지털 짝꿍 (AI 말벗)</p>
-        <p id="voiceStatus" class="text-base text-gray-500 mb-3 font-semibold text-center">
-          "오늘 점심 뭐 먹을까?" 편하게 말씀하세요
-        </p>
-
-        <button id="micBtn" onclick="toggleSpeechRecognition()" class="w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-600 to-blue-500 text-white flex flex-col items-center justify-center shadow-lg active:scale-95 transition transform duration-150 my-1">
-          <i id="micIcon" class="fa-solid fa-microphone text-5xl mb-1"></i>
-          <span id="micLabel" class="text-base font-black">말씀하기</span>
-        </button>
-
-        <div class="w-full mt-4 space-y-3">
-          <div id="userChatBox" class="bg-indigo-50 border border-indigo-200 rounded-2xl p-3 text-right hidden">
-            <span class="text-xs font-bold text-indigo-500 block mb-0.5">어르신 말씀</span>
-            <p id="userText" class="text-xl font-bold text-gray-900"></p>
-          </div>
-          <div id="aiChatBox" class="bg-emerald-50 border border-emerald-300 rounded-2xl p-3.5 text-left hidden">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
-              <span class="text-sm font-bold text-emerald-800">디지털 짝꿍의 대답</span>
-            </div>
-            <p id="aiText" class="text-xl font-black text-emerald-950 leading-relaxed"></p>
-          </div>
-        </div>
-
-        <div class="w-full mt-4 flex gap-2">
-          <input type="text" id="manualInput" placeholder="글자로 입력하셔도 됩니다" class="flex-1 border-2 border-gray-300 rounded-xl px-4 py-2.5 text-base focus:border-indigo-500 outline-none" onkeydown="if(event.key === 'Enter') sendManualMessage()">
-          <button onclick="sendManualMessage()" class="bg-indigo-600 active:bg-indigo-700 text-white font-bold px-4 rounded-xl text-base shrink-0">전송</button>
-        </div>
-      </section>
-
-      <!-- 3. 동네 짝꿍 (4대 생활 케어) -->
-      <section class="space-y-3">
-        <div class="flex items-center justify-between px-1">
-          <h2 class="text-xl font-black text-gray-900 flex items-center gap-2">
-            <i class="fa-solid fa-people-carry-box text-emerald-600"></i> 동네 짝꿍 호출하기
+        <!-- (가) 내 안심 상태 -->
+        <section class="bg-white rounded-3xl p-4 border-2 border-emerald-600 shadow-sm space-y-4">
+          <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-shield-heart text-emerald-700"></i> 내 안심 상태
           </h2>
-          <span class="text-sm text-gray-500 font-bold">사람이 직접 찾아가요</span>
-        </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <button onclick="processUserInput('동행')" class="bg-purple-50 hover:bg-purple-100 border-2 border-purple-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
-            <div class="w-11 h-11 bg-purple-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
-              <i class="fa-solid fa-person-walking-with-cane"></i>
+          <!-- 건강 안심 (기존 카드 그대로) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-gray-200">
+              <span class="text-xl font-bold text-gray-900">24시간 건강 안심</span>
+              <span class="bg-emerald-100 text-emerald-900 text-base font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse"></span> 정상 상태
+              </span>
             </div>
-            <div>
-              <span class="text-xl font-black text-purple-950 block">병원 동행</span>
-              <span class="text-xs font-bold text-purple-700">진료실 픽업 및 약 수령</span>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="tap bg-rose-50 border-2 border-rose-300 rounded-2xl p-3 text-center cursor-pointer" onclick="processUserInput('내 심박수 어때')">
+                <span class="text-gray-800 text-lg font-bold block mb-1">실시간 심박수</span>
+                <div class="text-2xl font-black text-rose-700 flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-heart animate-bounce"></i>
+                  <span>72</span> <span class="text-base font-bold text-gray-800">회/분</span>
+                </div>
+              </div>
+              <div class="tap bg-blue-50 border-2 border-blue-300 rounded-2xl p-3 text-center cursor-pointer" onclick="processUserInput('혈압 어때')">
+                <span class="text-gray-800 text-lg font-bold block mb-1">최근 혈압</span>
+                <div class="text-2xl font-black text-blue-700 flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-droplet"></i>
+                  <span>120/80</span>
+                </div>
+              </div>
             </div>
-          </button>
-
-          <button onclick="processUserInput('집수리')" class="bg-amber-50 hover:bg-amber-100 border-2 border-amber-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
-            <div class="w-11 h-11 bg-amber-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
-              <i class="fa-solid fa-wrench"></i>
-            </div>
-            <div>
-              <span class="text-xl font-black text-amber-950 block">만능 집수리</span>
-              <span class="text-xs font-bold text-amber-800">전구 교체, 무거운 짐</span>
-            </div>
-          </button>
-
-          <button onclick="processUserInput('반찬')" class="bg-teal-50 hover:bg-teal-100 border-2 border-teal-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
-            <div class="w-11 h-11 bg-teal-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
-              <i class="fa-solid fa-bowl-food"></i>
-            </div>
-            <div>
-              <span class="text-xl font-black text-teal-950 block">건강 반찬</span>
-              <span class="text-xs font-bold text-teal-700">저염/연화식 정기 배달</span>
-            </div>
-          </button>
-
-          <button onclick="processUserInput('청소')" class="bg-sky-50 hover:bg-sky-100 border-2 border-sky-400 rounded-2xl p-4 text-left shadow-sm active:scale-95 transition flex flex-col justify-between h-36">
-            <div class="w-11 h-11 bg-sky-500 text-white rounded-xl flex items-center justify-center text-2xl shadow">
-              <i class="fa-solid fa-broom"></i>
-            </div>
-            <div>
-              <span class="text-xl font-black text-sky-950 block">가사 돌봄</span>
-              <span class="text-xs font-bold text-sky-700">욕실 청소, 분리수거</span>
-            </div>
-          </button>
-        </div>
-      </section>
-
-      <!-- 4. 외부 앱 실전 연동 및 퍼즐 -->
-      <section class="space-y-3 pt-1">
-        <h2 class="text-xl font-black text-gray-900 flex items-center gap-2 px-1">
-          <i class="fa-solid fa-link text-amber-500"></i> 안심 스마트 연결
-        </h2>
-
-        <!-- 카카오 택시 앱 켜기 -->
-        <button onclick="openKakaoTaxi()" class="w-full bg-amber-400 hover:bg-amber-500 active:scale-[0.98] text-gray-950 font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition border-2 border-amber-500">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl text-amber-600 shadow-sm">
-              <i class="fa-solid fa-taxi"></i>
-            </div>
-            <div class="text-left">
-              <span class="text-xl font-black block">카카오 택시 호출</span>
-              <span class="text-sm font-bold text-gray-800">진짜 카카오T 앱 켜기</span>
+            <div class="tap bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 flex items-center justify-between px-5 cursor-pointer" onclick="processUserInput('오늘 얼마나 걸었어')">
+              <span class="text-gray-900 text-xl font-bold">오늘 걸음 수</span>
+              <span class="text-2xl font-black text-amber-800 flex items-center gap-2">
+                <i class="fa-solid fa-person-walking text-2xl"></i>
+                4,532 <span class="text-base font-bold text-gray-800">걸음</span>
+              </span>
             </div>
           </div>
-          <i class="fa-solid fa-chevron-right text-xl text-gray-700"></i>
-        </button>
 
-        <!-- 명화 퍼즐로 이동 -->
-        <button onclick="location.href='puzzle.html'" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 active:scale-[0.98] text-white font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl text-white backdrop-blur-sm shadow-inner">
-              <i class="fa-solid fa-puzzle-piece"></i>
+          <!-- 디지털 짝꿍 (AI 말벗) -->
+          <div class="border-t-2 border-gray-200 pt-4 flex flex-col items-center">
+            <p class="text-2xl font-black text-gray-900 mb-1">디지털 짝꿍 (AI 말벗)</p>
+            <p id="voiceStatus" class="text-xl text-gray-800 mb-3 font-semibold text-center">
+              "오늘 점심 뭐 먹을까?" 편하게 말씀하세요
+            </p>
+
+            <button id="micBtn" onclick="toggleSpeechRecognition()" class="w-32 h-32 rounded-full bg-gradient-to-tr from-indigo-700 to-blue-600 text-white flex flex-col items-center justify-center shadow-lg active:scale-95 transition transform duration-150 my-1">
+              <i id="micIcon" class="fa-solid fa-microphone text-5xl mb-1"></i>
+              <span id="micLabel" class="text-xl font-black">말씀하기</span>
+            </button>
+
+            <div class="w-full mt-4 space-y-3">
+              <div id="userChatBox" class="bg-indigo-50 border border-indigo-300 rounded-2xl p-3 text-right hidden">
+                <span class="text-base font-bold text-indigo-800 block mb-0.5">어르신 말씀</span>
+                <p id="userText" class="text-xl font-bold text-gray-900"></p>
+              </div>
+              <div id="aiChatBox" class="bg-emerald-50 border border-emerald-300 rounded-2xl p-3.5 text-left hidden">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-3 h-3 bg-emerald-600 rounded-full animate-ping"></span>
+                  <span class="text-base font-bold text-emerald-900">디지털 짝꿍의 대답</span>
+                </div>
+                <p id="aiText" class="text-xl font-black text-emerald-950 leading-relaxed"></p>
+              </div>
             </div>
-            <div class="text-left">
-              <span class="text-xl font-black block text-white">치매 예방 퍼즐</span>
-              <span class="text-sm font-semibold text-indigo-100">명화 그림 맞추기 게임</span>
+
+            <div class="w-full mt-4 flex gap-3">
+              <input type="text" id="manualInput" placeholder="글자로 입력하셔도 됩니다" class="tap flex-1 min-w-0 border-2 border-gray-400 rounded-xl px-4 text-xl focus:border-indigo-600 outline-none" onkeydown="if(event.key === 'Enter') sendManualMessage()">
+              <button onclick="sendManualMessage()" class="tap bg-indigo-700 active:bg-indigo-800 text-white font-bold px-5 rounded-xl text-xl shrink-0">전송</button>
             </div>
           </div>
-          <i class="fa-solid fa-chevron-right text-xl text-white/50"></i>
-        </button>
-      </section>
+        </section>
+
+        <!-- (나) 오늘의 짝꿍 -->
+        <section class="bg-white rounded-3xl p-4 border-2 border-sky-500 shadow-sm space-y-3">
+          <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-user-group text-sky-700"></i> 오늘의 짝꿍
+          </h2>
+          <p class="text-xl text-gray-800">늘 곁에서 챙겨 주는 내 짝꿍이에요.</p>
+          <div id="matchView" class="space-y-3 hidden">
+            <div class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-4 space-y-1">
+              <p class="text-2xl font-black text-gray-900"><i class="fa-solid fa-user text-sky-700"></i> <span id="matchName"></span></p>
+              <p class="text-xl font-bold text-gray-800"><i class="fa-solid fa-location-dot text-sky-700"></i> <span id="matchArea"></span></p>
+              <p class="text-xl font-bold text-gray-800"><i class="fa-solid fa-phone text-sky-700"></i> <span id="matchPhone"></span></p>
+              <p id="matchLastVisit" class="text-lg font-bold text-emerald-800"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="callMatch()" class="tap bg-sky-700 active:bg-sky-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
+                <i class="fa-solid fa-phone-volume text-2xl"></i> 안부 전화
+              </button>
+              <button onclick="checkVisit()" class="tap bg-emerald-700 active:bg-emerald-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
+                <i class="fa-solid fa-house-circle-check text-2xl"></i> 방문 체크
+              </button>
+            </div>
+            <button onclick="showMatchForm()" class="tap w-full bg-gray-200 text-gray-900 text-lg font-bold rounded-2xl">짝꿍 정보 바꾸기</button>
+          </div>
+          <div id="matchForm" class="space-y-3 hidden">
+            <p class="text-xl font-bold text-gray-900">아직 짝꿍 정보가 없어요. 한 번만 넣어 두세요.</p>
+            <input id="matchNameInput" type="text" placeholder="이름 (예: 김영숙)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
+            <input id="matchAreaInput" type="text" placeholder="동네 (예: 행복동)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
+            <input id="matchPhoneInput" type="tel" placeholder="연락처 (예: 010-1234-5678)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
+            <button onclick="saveMatch()" class="tap w-full bg-sky-700 text-white text-xl font-black rounded-2xl shadow">짝꿍 저장하기</button>
+          </div>
+        </section>
+
+        <!-- (다) 도움 요청하기 -->
+        <section class="bg-white rounded-3xl p-4 border-2 border-purple-500 shadow-sm space-y-3">
+          <button onclick="toggleCareRequest()" class="tap w-full bg-purple-700 active:bg-purple-800 text-white text-[26px] font-black rounded-2xl flex items-center justify-center gap-3 shadow py-3">
+            <i class="fa-solid fa-hand-holding-heart text-3xl"></i> 도움 요청하기
+          </button>
+          <div id="careRequestPanel" class="space-y-3">
+            <p class="text-xl font-black text-gray-900">① 어떤 도움이 필요하세요?</p>
+            <div id="careServiceGrid" class="grid grid-cols-2 gap-3"></div>
+            <p class="text-xl font-black text-gray-900 pt-1">② 언제가 좋으세요?</p>
+            <div id="careSlotGrid" class="grid grid-cols-1 gap-3"></div>
+            <button onclick="sendCareRequest()" class="tap w-full bg-rose-600 active:bg-rose-700 text-white text-2xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
+              <i class="fa-solid fa-paper-plane"></i> 요청 보내기
+            </button>
+          </div>
+        </section>
+
+        <!-- (라) 활동일지 자동 만들기 -->
+        <section class="bg-white rounded-3xl p-4 border-2 border-amber-500 shadow-sm space-y-3">
+          <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-clipboard-list text-amber-700"></i> 활동일지 자동 만들기
+          </h2>
+          <p class="text-xl text-gray-800">도와드린 뒤 버튼 한 번이면 일지가 만들어져요.</p>
+          <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 text-center">
+            <span class="text-xl font-bold text-gray-900">이번 달 활동</span>
+            <p class="text-5xl font-black text-amber-800 mt-1"><span id="monthLogCount">0</span>회</p>
+          </div>
+          <p class="text-xl font-black text-gray-900">한 일 고르기</p>
+          <div id="logServiceGrid" class="grid grid-cols-2 gap-3"></div>
+          <input id="logArea" type="text" placeholder="어르신 동네 (예: 행복동)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-amber-600">
+          <input id="logMemo" type="text" placeholder="메모 (안 써도 돼요)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-amber-600">
+          <button onclick="makeActivityLog()" class="tap w-full bg-amber-500 active:bg-amber-600 text-gray-950 text-2xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> 활동일지 만들기
+          </button>
+          <div id="logResultBox" class="hidden space-y-3">
+            <div class="bg-gray-50 border-2 border-gray-400 rounded-2xl p-3">
+              <p id="logResult" class="text-xl font-bold text-gray-900 leading-relaxed break-keep"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="copyLog()" class="tap bg-gray-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2">
+                <i class="fa-solid fa-copy"></i> 복사하기
+              </button>
+              <button onclick="sendLogTelegram()" class="tap bg-sky-700 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2">
+                <i class="fa-brands fa-telegram"></i> 텔레그램으로 보내기
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- (마) 안내 -->
+        <p class="text-base font-bold text-gray-800 text-center px-2">
+          <i class="fa-solid fa-circle-info"></i> 이 기록은 노인일자리 활동일지 제출에 그대로 쓸 수 있습니다.
+        </p>
+      </div>
+
+      <!-- ============ 탭2: 생활해결 (실버당근) ============ -->
+      <div id="tab2" class="hidden flex flex-col gap-5">
+
+        <div id="lifeAskBlock" class="space-y-4">
+          <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border-2 border-gray-300 px-4 py-2">
+            <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel">우리 동네</span></span>
+            <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
+          </div>
+
+          <button onclick="openLifeRequest()" class="w-full min-h-[96px] bg-red-600 active:bg-red-700 text-white text-[30px] font-black rounded-3xl flex items-center justify-center gap-3 shadow-lg">
+            <i class="fa-solid fa-hand text-4xl"></i> 도와주세요
+          </button>
+
+          <!-- 요청 작성 패널 -->
+          <section id="lifeRequestPanel" class="hidden bg-white rounded-3xl p-4 border-2 border-red-500 shadow-sm space-y-3">
+            <h2 class="text-[26px] font-black text-gray-900">무엇을 도와드릴까요?</h2>
+            <label class="tap w-full bg-gray-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-camera text-2xl"></i> 사진 찍기 / 고르기 (안 해도 돼요)
+              <input id="lifePhotoInput" type="file" accept="image/*" class="hidden" onchange="onLifePhoto(this)">
+            </label>
+            <img id="lifePhotoPreview" alt="올릴 사진" class="hidden w-full max-h-64 object-contain rounded-2xl border-2 border-gray-300">
+            <div id="lifeCatGrid" class="grid grid-cols-2 gap-3"></div>
+            <input id="lifeText" type="text" placeholder="하실 말씀 (안 써도 돼요)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-red-600">
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="closeLifeRequest()" class="tap bg-gray-200 text-gray-900 text-xl font-bold rounded-2xl">취소</button>
+              <button onclick="submitLifeRequest()" class="tap bg-red-600 text-white text-2xl font-black rounded-2xl shadow">올리기</button>
+            </div>
+          </section>
+
+          <!-- 4대 카테고리 -->
+          <section class="space-y-3">
+            <h2 class="text-[26px] font-black text-gray-900 px-1">무엇이든 이웃에게 부탁하세요</h2>
+            <div id="lifeCatCards" class="grid grid-cols-2 gap-3"></div>
+          </section>
+
+          <!-- 카카오 택시 (기존 기능 유지) -->
+          <button onclick="openKakaoTaxi()" class="tap w-full bg-amber-400 hover:bg-amber-500 active:scale-[0.98] text-gray-950 font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition border-2 border-amber-500">
+            <div class="flex items-center gap-3">
+              <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-3xl text-amber-700 shadow-sm">
+                <i class="fa-solid fa-taxi"></i>
+              </div>
+              <div class="text-left">
+                <span class="text-xl font-black block">카카오 택시 호출</span>
+                <span class="text-base font-bold text-gray-900">진짜 카카오T 앱 켜기</span>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-xl text-gray-900"></i>
+          </button>
+        </div>
+
+        <!-- 우리 동네 도움 목록 -->
+        <section id="lifeListBlock" class="space-y-3">
+          <h2 class="text-[26px] font-black text-gray-900 px-1 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-emerald-700"></i> 우리 동네 도움 목록
+          </h2>
+          <div id="requestList" class="space-y-3"></div>
+        </section>
+
+        <p class="bg-white border-2 border-gray-400 rounded-2xl p-3 text-lg font-bold text-gray-900 leading-relaxed" style="order: 99">
+          <i class="fa-solid fa-circle-info text-emerald-700"></i> 이웃이 서로 돕는 게시판입니다. 돈을 받는 전문 수리·이동 서비스는 동네 업체나 생활지원사 연결로 안내합니다.
+        </p>
+      </div>
+
+      <!-- ============ 탭3: 두뇌 사랑방 ============ -->
+      <div id="tab3" class="hidden space-y-5">
+
+        <div id="aliveBanner" class="hidden bg-yellow-300 border-4 border-yellow-500 rounded-3xl p-4 space-y-3">
+          <p class="text-2xl font-black text-gray-950 leading-snug">
+            <i class="fa-solid fa-triangle-exclamation"></i> 24시간 동안 접속이 없었어요. 짝꿍에게 안부 알림을 보낼까요?
+          </p>
+          <button onclick="sendAliveAlert()" class="tap w-full bg-gray-950 text-yellow-300 text-2xl font-black rounded-2xl flex items-center justify-center gap-2">
+            <i class="fa-solid fa-bell"></i> 안부 알림 보내기
+          </button>
+          <p id="aliveMsg" class="hidden text-xl font-bold text-gray-950"></p>
+        </div>
+
+        <section class="bg-white rounded-3xl p-4 border-2 border-indigo-500 shadow-sm space-y-3">
+          <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-brain text-indigo-700"></i> 오늘의 두뇌 점수
+          </h2>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-indigo-50 border-2 border-indigo-300 rounded-2xl p-3 text-center">
+              <span class="text-xl font-bold text-gray-900">이번 주 접속</span>
+              <p class="text-5xl font-black text-indigo-800 mt-1"><span id="weekVisitDays">0</span>일</p>
+            </div>
+            <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3 text-center">
+              <span class="text-xl font-bold text-gray-900">이번 주 게임</span>
+              <p class="text-5xl font-black text-emerald-800 mt-1"><span id="weekPlays">0</span>회</p>
+            </div>
+          </div>
+          <p class="text-lg font-bold text-gray-800">매일 들어와 한 판씩 하시면 짝꿍이 든든해해요.</p>
+        </section>
+
+        <section class="space-y-3">
+          <h2 class="text-[26px] font-black text-gray-900 px-1 flex items-center gap-2">
+            <i class="fa-solid fa-gamepad text-rose-600"></i> 사랑방 게임
+          </h2>
+          <div id="gameCards" class="space-y-3"></div>
+        </section>
+      </div>
     </main>
 
-    <!-- 팝업 모달창 -->
+    <!-- 하단 고정 탭바 -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 flex justify-center pointer-events-none">
+      <div class="w-full max-w-md grid grid-cols-3 bg-white border-t-2 border-gray-300 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pointer-events-auto" style="height: 96px;">
+        <button id="tabBtn1" onclick="selectTab(1)" class="flex flex-col items-center justify-center gap-1 font-black" aria-label="노노케어 도움매칭">
+          <i class="fa-solid fa-handshake-angle" style="font-size: 32px;"></i>
+          <span style="font-size: 20px;">도움매칭</span>
+        </button>
+        <button id="tabBtn2" onclick="selectTab(2)" class="flex flex-col items-center justify-center gap-1 font-black" aria-label="생활해결 실버당근">
+          <i class="fa-solid fa-carrot" style="font-size: 32px;"></i>
+          <span style="font-size: 20px;">생활해결</span>
+        </button>
+        <button id="tabBtn3" onclick="selectTab(3)" class="flex flex-col items-center justify-center gap-1 font-black" aria-label="두뇌 사랑방">
+          <i class="fa-solid fa-brain" style="font-size: 32px;"></i>
+          <span style="font-size: 20px;">두뇌 사랑방</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- 알림 토스트 -->
+    <div id="toast" class="hidden fixed left-0 right-0 z-[60] flex justify-center px-4 pointer-events-none" style="bottom: 110px;">
+      <div id="toastText" class="max-w-md w-full bg-gray-950 text-white text-xl font-bold rounded-2xl px-5 py-4 shadow-2xl text-center"></div>
+    </div>
+
+    <!-- 역할 선택 화면 -->
+    <div id="roleScreen" class="hidden fixed inset-0 z-40 flex justify-center bg-gray-100">
+      <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-center p-6 space-y-6">
+        <div class="text-center space-y-2">
+          <i class="fa-solid fa-hand-holding-hand text-6xl text-emerald-700"></i>
+          <h2 class="text-[32px] font-black text-gray-900">짝꿍 2.0</h2>
+          <p class="text-2xl font-bold text-gray-900">나는 어떤 쪽인가요?</p>
+        </div>
+        <button onclick="chooseRole('receiver')" class="w-full min-h-[120px] bg-rose-600 active:bg-rose-700 text-white rounded-3xl flex items-center justify-center gap-4 shadow-lg">
+          <i class="fa-solid fa-house-user text-5xl"></i>
+          <span class="text-[28px] font-black">도움이 필요해요</span>
+        </button>
+        <button onclick="chooseRole('giver')" class="w-full min-h-[120px] bg-emerald-700 active:bg-emerald-800 text-white rounded-3xl flex items-center justify-center gap-4 shadow-lg">
+          <i class="fa-solid fa-hand-holding-heart text-5xl"></i>
+          <span class="text-[28px] font-black">내가 도와드릴게요</span>
+        </button>
+        <p class="text-lg font-bold text-gray-800 text-center">나중에 위쪽 '역할 바꾸기'로 언제든 바꿀 수 있어요.</p>
+      </div>
+    </div>
+
+    <!-- 팝업 모달창 (서비스 신청) -->
     <div id="serviceModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
       <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
         <div id="modalIcon" class="w-20 h-20 mx-auto rounded-full bg-emerald-100 flex items-center justify-center text-4xl text-emerald-600">
           <i class="fa-solid fa-bell"></i>
         </div>
-        <h3 id="modalTitle" class="text-2xl font-black text-gray-900">안내</h3>
-        <p id="modalDesc" class="text-lg font-bold text-gray-700 leading-relaxed"></p>
+        <h3 id="modalTitle" class="text-[26px] font-black text-gray-900">안내</h3>
+        <p id="modalDesc" class="text-xl font-bold text-gray-800 leading-relaxed"></p>
         <div class="pt-2 flex gap-3">
-          <button onclick="closeModal()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-3.5 rounded-2xl text-lg">취소</button>
-          <button onclick="confirmAndSendOrder()" class="flex-1 bg-emerald-600 text-white font-black py-3.5 rounded-2xl text-lg shadow">신청하기</button>
+          <button onclick="closeModal()" class="tap flex-1 bg-gray-200 text-gray-900 font-bold rounded-2xl text-xl">취소</button>
+          <button onclick="confirmAndSendOrder()" class="tap flex-1 bg-emerald-700 text-white font-black rounded-2xl text-xl shadow">신청하기</button>
         </div>
       </div>
     </div>
@@ -205,28 +361,28 @@
     <!-- 관리자(API 및 텔레그램) 설정 모달 -->
     <div id="apiKeyModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
       <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-left space-y-4">
-        <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
-          <i class="fa-solid fa-gear text-emerald-600"></i> 관리자 실전 설정
+        <h3 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
+          <i class="fa-solid fa-gear text-emerald-700"></i> 관리자 실전 설정
         </h3>
-        
+
         <div>
-          <label class="text-xs font-bold text-gray-500">1. Gemini API 키 (말벗 용도)</label>
-          <input type="password" id="geminiApiKey" placeholder="AIzaSy..." class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm outline-none mt-1">
+          <label class="text-base font-bold text-gray-900">1. Gemini API 키 (말벗 용도)</label>
+          <input type="password" id="geminiApiKey" placeholder="AIzaSy..." class="tap w-full border-2 border-gray-400 rounded-xl px-3 text-lg outline-none mt-1">
         </div>
-        
-        <div class="pt-2 border-t border-gray-100">
-          <label class="text-xs font-bold text-rose-500">2. 텔레그램 봇 토큰 (주문 수신용)</label>
-          <input type="password" id="telegramToken" placeholder="예: 123456:ABC-DEF..." class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm outline-none mt-1">
+
+        <div class="pt-2 border-t border-gray-200">
+          <label class="text-base font-bold text-rose-700">2. 텔레그램 봇 토큰 (주문 수신용)</label>
+          <input type="password" id="telegramToken" placeholder="예: 123456:ABC-DEF..." class="tap w-full border-2 border-gray-400 rounded-xl px-3 text-lg outline-none mt-1">
         </div>
 
         <div>
-          <label class="text-xs font-bold text-rose-500">3. 텔레그램 Chat ID (대표님 고유번호)</label>
-          <input type="text" id="telegramChatId" placeholder="예: 123456789" class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 text-sm outline-none mt-1">
+          <label class="text-base font-bold text-rose-700">3. 텔레그램 Chat ID (대표님 고유번호)</label>
+          <input type="text" id="telegramChatId" placeholder="예: 123456789" class="tap w-full border-2 border-gray-400 rounded-xl px-3 text-lg outline-none mt-1">
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button onclick="closeApiKeyModal()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-2.5 rounded-xl">닫기</button>
-          <button onclick="saveAdminSettings()" class="flex-1 bg-emerald-600 text-white font-black py-2.5 rounded-xl shadow">저장하기</button>
+        <div class="flex gap-3 pt-2">
+          <button onclick="closeApiKeyModal()" class="tap flex-1 bg-gray-200 text-gray-900 font-bold text-xl rounded-xl">닫기</button>
+          <button onclick="saveAdminSettings()" class="tap flex-1 bg-emerald-700 text-white font-black text-xl rounded-xl shadow">저장하기</button>
         </div>
       </div>
     </div>
@@ -251,7 +407,7 @@
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
         speakText('카카오 택시 앱을 연결합니다.');
-        location.href = "kakaot://"; 
+        location.href = "kakaot://";
         setTimeout(() => {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             if (/android/i.test(userAgent)) {
@@ -278,13 +434,31 @@
 
     function closeModal() { document.getElementById('serviceModal').classList.add('hidden'); }
 
+    // 텔레그램 발송 공통 (confirmAndSendOrder 의 fetch 패턴 그대로)
+    // 반환: 'ok' | 'fail' | 'neterr' | 'nokey'
+    async function sendTelegram(messageText) {
+      const token = localStorage.getItem('telegram_token');
+      const chatId = localStorage.getItem('telegram_chat_id');
+      if (!token || !chatId) return 'nokey';
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: messageText })
+        });
+        return res.ok ? 'ok' : 'fail';
+      } catch (err) {
+        return 'neterr';
+      }
+    }
+
     // 텔레그램 실전 연동
     async function confirmAndSendOrder() {
       const token = localStorage.getItem('telegram_token');
       const chatId = localStorage.getItem('telegram_chat_id');
-      
+
       closeModal();
-      
+
       if (!token || !chatId) {
         alert(`[테스트 완료]\n어르신이 '${currentServiceRequested}'을(를) 요청하셨습니다.\n\n*실제 대표님 폰으로 알림을 받으려면 상단 [관리자] 설정에서 텔레그램 정보를 입력하세요.`);
         return;
@@ -292,20 +466,13 @@
 
       const messageText = `🚨 [짝꿍 호출 알림]\n\n고객님께서 [${currentServiceRequested}] 서비스를 요청하셨습니다!\n빠르게 연락하여 스케줄을 확정해 주세요.`;
 
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chatId, text: messageText })
-        });
-        
-        if(res.ok) {
-          speakText('신청이 성공적으로 접수되었습니다. 동네 짝꿍 매니저가 곧 연락드립니다.');
-          alert('대표님(매니저)의 스마트폰으로 호출이 전송되었습니다!');
-        } else {
-          alert('텔레그램 전송 실패. 설정 정보를 확인하세요.');
-        }
-      } catch (err) {
+      const result = await sendTelegram(messageText);
+      if (result === 'ok') {
+        speakText('신청이 성공적으로 접수되었습니다. 동네 짝꿍 매니저가 곧 연락드립니다.');
+        alert('대표님(매니저)의 스마트폰으로 호출이 전송되었습니다!');
+      } else if (result === 'fail') {
+        alert('텔레그램 전송 실패. 설정 정보를 확인하세요.');
+      } else {
         alert('네트워크 오류로 전송하지 못했습니다.');
       }
     }
@@ -316,9 +483,9 @@
       document.getElementById('telegramChatId').value = localStorage.getItem('telegram_chat_id') || '';
       document.getElementById('apiKeyModal').classList.remove('hidden');
     }
-    
+
     function closeApiKeyModal() { document.getElementById('apiKeyModal').classList.add('hidden'); }
-    
+
     function saveAdminSettings() {
       localStorage.setItem('gemini_api_key', document.getElementById('geminiApiKey').value.trim());
       localStorage.setItem('telegram_token', document.getElementById('telegramToken').value.trim());
@@ -331,7 +498,7 @@
       if (!query || query.trim() === '') return;
       const trimmed = query.trim();
       const lower = trimmed.toLowerCase();
-      
+
       document.getElementById('userText').innerText = trimmed;
       document.getElementById('userChatBox').classList.remove('hidden');
       document.getElementById('voiceStatus').innerText = "생각 중...";
@@ -359,7 +526,7 @@
         showReply("가사 돌봄 도우미를 연결해 드릴게요."); return;
       }
       if (lower.includes('택시')) {
-        openKakaoTaxi(); 
+        openKakaoTaxi();
         showReply("카카오 택시 앱을 켜드릴게요."); return;
       }
 
@@ -380,7 +547,7 @@
           }
         } catch (err) {}
       }
-      
+
       showReply(`"${trimmed}" 말씀하셨군요! 어르신 곁에 늘 '짝꿍'이 있으니 든든하게 생각하세요.`);
     }
 
@@ -409,6 +576,514 @@
     function toggleSpeechRecognition() {
       if (recognition) recognition.start();
     }
+
+    /* =====================================================
+       짝꿍 2.0 공통 도우미
+       ===================================================== */
+    function lsGet(key, fallback) {
+      try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); }
+      catch (e) { return fallback; }
+    }
+    function lsSet(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    let toastTimer = null;
+    function showToast(msg, speak) {
+      document.getElementById('toastText').innerText = msg;
+      document.getElementById('toast').classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3500);
+      if (speak) speakText(msg);
+    }
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    function fmtKoreanDateTime(d) {
+      return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    }
+    function fmtShort(iso) {
+      const d = new Date(iso);
+      return `${d.getMonth() + 1}월 ${d.getDate()}일 ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    }
+    function dateKey(d) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
+    function weekStart(d) {
+      const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const day = (s.getDay() + 6) % 7; // 월요일 = 0
+      s.setDate(s.getDate() - day);
+      return s;
+    }
+
+    function myArea() { return localStorage.getItem('zzakkoong_area') || ''; }
+
+    /* =====================================================
+       역할 선택 & 탭
+       ===================================================== */
+    function openRoleScreen() { document.getElementById('roleScreen').classList.remove('hidden'); }
+
+    function chooseRole(role) {
+      localStorage.setItem('zzakkoong_role', role);
+      document.getElementById('roleScreen').classList.add('hidden');
+      applyRole();
+      showToast(role === 'giver' ? '고맙습니다! 도움이 필요한 이웃을 먼저 보여드릴게요.' : '언제든 편하게 도움을 요청하세요.', true);
+    }
+
+    function applyRole() {
+      const role = localStorage.getItem('zzakkoong_role');
+      document.getElementById('roleBadge').title = role === 'giver' ? '지금: 돕는 사람' : (role === 'receiver' ? '지금: 도움 받는 분' : '');
+      // giver: 요청 목록 먼저 / receiver: 요청 작성 먼저
+      document.getElementById('lifeListBlock').style.order = role === 'giver' ? '1' : '2';
+      document.getElementById('lifeAskBlock').style.order = role === 'giver' ? '2' : '1';
+    }
+
+    function selectTab(n) {
+      for (let i = 1; i <= 3; i++) {
+        const on = i === n;
+        document.getElementById('tab' + i).classList.toggle('hidden', !on);
+        const btn = document.getElementById('tabBtn' + i);
+        btn.classList.toggle('bg-emerald-700', on);
+        btn.classList.toggle('text-white', on);
+        btn.classList.toggle('bg-white', !on);
+        btn.classList.toggle('text-gray-800', !on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      try { localStorage.setItem('zzakkoong_tab', String(n)); } catch (e) {}
+      if (n === 2) renderRequests();
+      if (n === 3) renderBrainScore();
+      window.scrollTo(0, 0);
+    }
+
+    /* =====================================================
+       탭1 — 노노케어
+       ===================================================== */
+    const CARE_SERVICES = [
+      { name: '병원 동행', icon: 'fa-person-walking-with-cane', color: 'purple', detail: '병원 동행 및 진료·약 수령 도움', place: '병원 동행' },
+      { name: '집수리',   icon: 'fa-wrench',                   color: 'amber',  detail: '생활 불편 점검 및 간단 수리 도움', place: '댁 방문' },
+      { name: '반찬',     icon: 'fa-bowl-food',                color: 'teal',   detail: '반찬 전달 및 식사 확인', place: '댁 방문' },
+      { name: '청소·가사', icon: 'fa-broom',                   color: 'sky',    detail: '청소·정리 등 가사 도움', place: '댁 방문' },
+      { name: '말벗',     icon: 'fa-comments',                 color: 'rose',   detail: '안부 확인 및 말벗', place: '댁 방문' }
+    ];
+    const CARE_SLOTS = ['오전 (9시~12시)', '오후 (1시~5시)', '저녁 (6시~8시)'];
+    const COLOR_BG = { purple: 'bg-purple-50 border-purple-500 text-purple-950', amber: 'bg-amber-50 border-amber-500 text-amber-950', teal: 'bg-teal-50 border-teal-500 text-teal-950', sky: 'bg-sky-50 border-sky-500 text-sky-950', rose: 'bg-rose-50 border-rose-500 text-rose-950', red: 'bg-red-50 border-red-500 text-red-950', emerald: 'bg-emerald-50 border-emerald-500 text-emerald-950' };
+    const COLOR_ICON = { purple: 'bg-purple-700', amber: 'bg-amber-600', teal: 'bg-teal-700', sky: 'bg-sky-700', rose: 'bg-rose-600', red: 'bg-red-600', emerald: 'bg-emerald-700' };
+
+    let careService = null, careSlot = null, logService = '말벗', lastLogText = '';
+
+    function choiceButton(item, selected, onclick, sub) {
+      return `<button onclick="${onclick}" class="tap ${COLOR_BG[item.color]} border-2 rounded-2xl p-3 flex items-center gap-3 text-left active:scale-95 transition ${selected ? 'chip-on' : ''}">
+        <span class="w-12 h-12 shrink-0 ${COLOR_ICON[item.color]} text-white rounded-xl flex items-center justify-center text-2xl shadow"><i class="fa-solid ${item.icon}"></i></span>
+        <span class="text-xl font-black leading-tight">${esc(item.name)}${sub ? `<span class="block text-base font-bold">${esc(sub)}</span>` : ''}</span>
+      </button>`;
+    }
+
+    function renderCareChoices() {
+      document.getElementById('careServiceGrid').innerHTML = CARE_SERVICES.map((s, i) =>
+        choiceButton(s, careService === s.name, `pickCareService(${i})`)).join('');
+      document.getElementById('careSlotGrid').innerHTML = CARE_SLOTS.map((t, i) =>
+        `<button onclick="pickCareSlot(${i})" class="tap bg-white border-2 border-gray-500 rounded-2xl px-4 text-xl font-black text-gray-900 flex items-center gap-3 ${careSlot === t ? 'chip-on bg-emerald-50' : ''}">
+          <i class="fa-regular fa-clock text-2xl text-emerald-700"></i> ${esc(t)}</button>`).join('');
+      document.getElementById('logServiceGrid').innerHTML = CARE_SERVICES.map((s, i) =>
+        choiceButton(s, logService === s.name, `pickLogService(${i})`)).join('');
+    }
+
+    function pickCareService(i) { careService = CARE_SERVICES[i].name; renderCareChoices(); }
+    function pickCareSlot(i) { careSlot = CARE_SLOTS[i]; renderCareChoices(); }
+    function pickLogService(i) { logService = CARE_SERVICES[i].name; renderCareChoices(); }
+
+    function toggleCareRequest() {
+      const p = document.getElementById('careRequestPanel');
+      p.classList.toggle('hidden');
+      if (!p.classList.contains('hidden')) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function sendCareRequest() {
+      if (!careService) { showToast('① 어떤 도움이 필요한지 먼저 골라 주세요.', true); return; }
+      if (!careSlot) { showToast('② 시간을 골라 주세요.', true); return; }
+      const req = {
+        id: Date.now(), kind: 'care', category: careService, slot: careSlot,
+        text: '', photo: '', area: myArea(), status: '기다리는 중', createdAt: new Date().toISOString()
+      };
+      const list = lsGet('zzakkoong_requests', []);
+      list.push(req);
+      saveRequestsSafe(list);
+
+      // 기존 confirmAndSendOrder 텔레그램 로직 재사용
+      currentServiceRequested = `${careService} / ${careSlot}${req.area ? ' / ' + req.area : ''}`;
+      careService = null; careSlot = null; renderCareChoices();
+      await confirmAndSendOrder();
+    }
+
+    /* ---- 오늘의 짝꿍 ---- */
+    function renderMatch() {
+      const m = lsGet('zzakkoong_match', null);
+      const has = m && m.name;
+      document.getElementById('matchView').classList.toggle('hidden', !has);
+      document.getElementById('matchForm').classList.toggle('hidden', !!has);
+      if (has) {
+        document.getElementById('matchName').innerText = m.name;
+        document.getElementById('matchArea').innerText = m.area || '동네 미입력';
+        document.getElementById('matchPhone').innerText = m.phone || '연락처 미입력';
+        document.getElementById('matchLastVisit').innerText = m.lastVisit ? `마지막 방문 체크: ${fmtShort(m.lastVisit)}` : '';
+      }
+      const logArea = document.getElementById('logArea');
+      if (!logArea.value) logArea.value = (has && m.area) || myArea();
+    }
+
+    function showMatchForm() {
+      const m = lsGet('zzakkoong_match', {}) || {};
+      document.getElementById('matchNameInput').value = m.name || '';
+      document.getElementById('matchAreaInput').value = m.area || '';
+      document.getElementById('matchPhoneInput').value = m.phone || '';
+      document.getElementById('matchView').classList.add('hidden');
+      document.getElementById('matchForm').classList.remove('hidden');
+    }
+
+    function saveMatch() {
+      const name = document.getElementById('matchNameInput').value.trim();
+      if (!name) { showToast('짝꿍 이름을 넣어 주세요.', true); return; }
+      const prev = lsGet('zzakkoong_match', {}) || {};
+      lsSet('zzakkoong_match', {
+        name, area: document.getElementById('matchAreaInput').value.trim(),
+        phone: document.getElementById('matchPhoneInput').value.trim(),
+        lastVisit: prev.lastVisit || '', savedAt: new Date().toISOString()
+      });
+      renderMatch();
+      showToast('짝꿍 정보를 저장했어요.', true);
+    }
+
+    function callMatch() {
+      const m = lsGet('zzakkoong_match', null);
+      const phone = m && m.phone ? m.phone.replace(/[^0-9+]/g, '') : '';
+      if (!phone) { showToast('짝꿍 연락처를 먼저 넣어 주세요.', true); showMatchForm(); return; }
+      speakText(`${m.name}님께 안부 전화를 겁니다.`);
+      location.href = 'tel:' + phone;
+    }
+
+    async function checkVisit() {
+      const m = lsGet('zzakkoong_match', null);
+      if (!m) return;
+      m.lastVisit = new Date().toISOString();
+      lsSet('zzakkoong_match', m);
+      renderMatch();
+      showToast('방문 체크 완료! 오늘도 고맙습니다.', true);
+      await sendTelegram(`🏠 [짝꿍 방문 체크]\n${fmtKoreanDateTime(new Date())}\n${m.name}${m.area ? ' (' + m.area + ')' : ''} 방문 확인`);
+    }
+
+    /* ---- 활동일지 ---- */
+    function makeActivityLog() {
+      const svc = CARE_SERVICES.find(s => s.name === logService) || CARE_SERVICES[4];
+      const area = document.getElementById('logArea').value.trim() || 'OO동';
+      const memo = document.getElementById('logMemo').value.trim();
+      const now = new Date();
+      const text = `${fmtKoreanDateTime(now)} / 노노케어 활동 / ${area} 어르신 ${svc.place} / ${memo || svc.detail} / 짝꿍 앱 기록`;
+      const logs = lsGet('zzakkoong_logs', []);
+      logs.push({ id: now.getTime(), at: now.toISOString(), service: svc.name, area, memo, text });
+      lsSet('zzakkoong_logs', logs);
+      lastLogText = text;
+      document.getElementById('logResult').innerText = text;
+      document.getElementById('logResultBox').classList.remove('hidden');
+      document.getElementById('logMemo').value = '';
+      renderLogCount();
+      showToast('활동일지를 만들었어요.', true);
+    }
+
+    function renderLogCount() {
+      const now = new Date();
+      const n = lsGet('zzakkoong_logs', []).filter(l => {
+        const d = new Date(l.at); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      }).length;
+      document.getElementById('monthLogCount').innerText = n;
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.left = '0'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    async function copyLog() {
+      if (!lastLogText) return;
+      let ok = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(lastLogText); ok = true; }
+      } catch (e) { ok = false; }
+      if (!ok) ok = fallbackCopy(lastLogText);
+      showToast(ok ? '복사했어요. 붙여넣기 하시면 됩니다.' : '복사가 안 됐어요. 글자를 길게 눌러 복사해 주세요.', true);
+    }
+
+    async function sendLogTelegram() {
+      if (!lastLogText) return;
+      const r = await sendTelegram(`📝 [노노케어 활동일지]\n${lastLogText}`);
+      showToast(r === 'ok' ? '텔레그램으로 보냈어요.' : r === 'nokey' ? '관리자 설정에서 텔레그램 정보를 먼저 넣어 주세요.' : '전송하지 못했어요. 잠시 뒤 다시 눌러 주세요.', true);
+    }
+
+    /* =====================================================
+       탭2 — 생활해결 (실버당근)
+       ===================================================== */
+    const LIFE_CATS = [
+      { name: '고장 수리',   icon: 'fa-screwdriver-wrench', color: 'amber',   desc: '형광등·수전·문고리' },
+      { name: '안심 반찬',   icon: 'fa-bowl-rice',          color: 'teal',    desc: '이웃 반찬 나눔·동네 반찬가게' },
+      { name: '장보기·심부름', icon: 'fa-basket-shopping',   color: 'sky',     desc: '생수·쌀·약국 처방약 수령' },
+      { name: '따뜻한 나눔', icon: 'fa-wheelchair',         color: 'rose',    desc: '보행기·휠체어·지팡이 나눔' }
+    ];
+    const STATUSES = ['기다리는 중', '짝꿍 찾음', '완료'];
+    const STATUS_STYLE = { '기다리는 중': 'bg-red-100 text-red-900 border-red-500', '짝꿍 찾음': 'bg-sky-100 text-sky-900 border-sky-600', '완료': 'bg-emerald-100 text-emerald-900 border-emerald-600' };
+
+    let lifeCat = null, lifePhoto = '';
+
+    function renderLifeCats() {
+      document.getElementById('lifeCatCards').innerHTML = LIFE_CATS.map((c, i) =>
+        `<button onclick="openLifeRequest(${i})" class="${COLOR_BG[c.color]} border-2 rounded-2xl p-3 text-left shadow-sm active:scale-95 transition flex flex-col justify-between gap-2 min-h-[150px]">
+          <span class="w-14 h-14 ${COLOR_ICON[c.color]} text-white rounded-xl flex items-center justify-center text-3xl shadow"><i class="fa-solid ${c.icon}"></i></span>
+          <span><span class="text-[22px] font-black block leading-tight">${esc(c.name)}</span><span class="text-base font-bold block mt-1">${esc(c.desc)}</span></span>
+        </button>`).join('');
+      document.getElementById('lifeCatGrid').innerHTML = LIFE_CATS.map((c, i) =>
+        choiceButton(c, lifeCat === c.name, `pickLifeCat(${i})`)).join('');
+    }
+
+    function pickLifeCat(i) { lifeCat = LIFE_CATS[i].name; renderLifeCats(); }
+
+    function openLifeRequest(i) {
+      if (typeof i === 'number') lifeCat = LIFE_CATS[i].name;
+      renderLifeCats();
+      const p = document.getElementById('lifeRequestPanel');
+      p.classList.remove('hidden');
+      p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeLifeRequest() {
+      document.getElementById('lifeRequestPanel').classList.add('hidden');
+      lifeCat = null; lifePhoto = '';
+      document.getElementById('lifePhotoInput').value = '';
+      document.getElementById('lifeText').value = '';
+      const prev = document.getElementById('lifePhotoPreview');
+      prev.classList.add('hidden'); prev.removeAttribute('src');
+      renderLifeCats();
+    }
+
+    // 300KB 초과 사진은 canvas 로 가로 800px 로 줄여 저장
+    function readPhoto(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('read'));
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          if (file.size <= 300 * 1024) { resolve(dataUrl); return; }
+          const img = new Image();
+          img.onerror = () => reject(new Error('decode'));
+          img.onload = () => {
+            const w = Math.min(800, img.naturalWidth || img.width);
+            const h = Math.round((img.naturalHeight || img.height) * w / (img.naturalWidth || img.width));
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            let out = canvas.toDataURL('image/jpeg', 0.8);
+            if (out.length * 0.75 > 300 * 1024) out = canvas.toDataURL('image/jpeg', 0.6);
+            resolve(out);
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function onLifePhoto(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      try {
+        lifePhoto = await readPhoto(file);
+        const prev = document.getElementById('lifePhotoPreview');
+        prev.src = lifePhoto; prev.classList.remove('hidden');
+      } catch (e) {
+        lifePhoto = '';
+        showToast('사진을 읽지 못했어요. 다른 사진을 골라 주세요.', true);
+      }
+    }
+
+    // 저장 공간이 모자라면 가장 오래된 요청부터 정리
+    function saveRequestsSafe(list) {
+      let removed = 0;
+      while (true) {
+        try { lsSet('zzakkoong_requests', list); break; }
+        catch (e) {
+          if (list.length > 1) { list.shift(); removed++; }
+          else if (list.length === 1 && list[0].photo) { list[0].photo = ''; }
+          else { break; }
+        }
+      }
+      if (removed) showToast(`저장 공간이 모자라 오래된 요청 ${removed}개를 정리했어요.`);
+      return list;
+    }
+
+    async function submitLifeRequest() {
+      if (!lifeCat) { showToast('어떤 도움인지 하나 골라 주세요.', true); return; }
+      const req = {
+        id: Date.now(), kind: 'life', category: lifeCat, slot: '',
+        text: document.getElementById('lifeText').value.trim(), photo: lifePhoto,
+        area: myArea(), status: '기다리는 중', createdAt: new Date().toISOString()
+      };
+      const list = lsGet('zzakkoong_requests', []);
+      list.push(req);
+      saveRequestsSafe(list);
+      const cat = lifeCat;
+      closeLifeRequest();
+      renderRequests();
+      showToast('올렸어요! 이웃 짝꿍이 곧 확인할 거예요.', true);
+      sendTelegram(`🥕 [실버당근 도움 요청]\n${cat}${req.area ? ' / ' + req.area : ''}${req.text ? '\n' + req.text : ''}${req.photo ? '\n(사진 첨부됨 - 앱에서 확인)' : ''}`);
+    }
+
+    function catMeta(req) {
+      if (req.kind === 'care') return CARE_SERVICES.find(s => s.name === req.category) || CARE_SERVICES[4];
+      return LIFE_CATS.find(c => c.name === req.category) || LIFE_CATS[0];
+    }
+
+    function renderRequests() {
+      const list = lsGet('zzakkoong_requests', []).slice().reverse();
+      const box = document.getElementById('requestList');
+      if (!list.length) {
+        box.innerHTML = `<div class="bg-white border-2 border-gray-300 rounded-2xl p-5 text-center text-xl font-bold text-gray-900">아직 올라온 요청이 없어요.</div>`;
+        return;
+      }
+      box.innerHTML = list.map(r => {
+        const m = catMeta(r);
+        return `<article class="bg-white border-2 border-gray-300 rounded-3xl overflow-hidden shadow-sm">
+          ${r.photo ? `<img src="${r.photo}" alt="${esc(r.category)} 사진" class="w-full max-h-60 object-cover">` : ''}
+          <div class="p-4 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="flex items-center gap-2 text-[22px] font-black text-gray-900">
+                <span class="w-11 h-11 shrink-0 ${COLOR_ICON[m.color]} text-white rounded-xl flex items-center justify-center text-xl"><i class="fa-solid ${m.icon}"></i></span>
+                ${esc(r.category)}
+              </span>
+              <span class="border-2 ${STATUS_STYLE[r.status] || STATUS_STYLE['기다리는 중']} text-base font-black px-3 py-1 rounded-full whitespace-nowrap">${esc(r.status)}</span>
+            </div>
+            <p class="text-lg font-bold text-gray-800"><i class="fa-solid fa-location-dot"></i> ${esc(r.area || '동네 미입력')} · <i class="fa-regular fa-clock"></i> ${esc(fmtShort(r.createdAt))}${r.slot ? ' · ' + esc(r.slot) : ''}</p>
+            ${r.text ? `<p class="text-xl font-bold text-gray-900">${esc(r.text)}</p>` : ''}
+            <div class="grid grid-cols-3 gap-3 pt-1">
+              ${STATUSES.map(s => `<button onclick="setRequestStatus(${r.id}, '${s}')" class="tap rounded-2xl text-lg font-black border-2 ${r.status === s ? STATUS_STYLE[s] + ' chip-on' : 'bg-white border-gray-400 text-gray-900'}">${s}</button>`).join('')}
+            </div>
+            <button onclick="deleteRequest(${r.id})" class="tap w-full bg-gray-100 border-2 border-gray-300 text-gray-900 text-lg font-bold rounded-2xl"><i class="fa-solid fa-trash-can"></i> 지우기</button>
+          </div>
+        </article>`;
+      }).join('');
+    }
+
+    function setRequestStatus(id, status) {
+      const list = lsGet('zzakkoong_requests', []);
+      const r = list.find(x => x.id === id);
+      if (!r) return;
+      r.status = status;
+      saveRequestsSafe(list);
+      renderRequests();
+      showToast(`'${status}'(으)로 바꿨어요.`, true);
+    }
+
+    function deleteRequest(id) {
+      if (!confirm('이 요청을 지울까요?')) return;
+      saveRequestsSafe(lsGet('zzakkoong_requests', []).filter(x => x.id !== id));
+      renderRequests();
+    }
+
+    function changeMyArea() {
+      const v = prompt('사시는 동네를 알려 주세요. (예: 행복동)', myArea());
+      if (v === null) return;
+      localStorage.setItem('zzakkoong_area', v.trim());
+      renderMyArea();
+    }
+    function renderMyArea() { document.getElementById('myAreaLabel').innerText = myArea() || '우리 동네'; }
+
+    /* =====================================================
+       탭3 — 두뇌 사랑방
+       ===================================================== */
+    const GAMES = [
+      { name: '마작',      icon: 'fa-cubes',             color: 'emerald', desc: '패를 맞추며 기억력 쑥쑥', url: 'https://mahjong-game-giyong369.vercel.app', newWin: true },
+      { name: '두뇌 퍼즐', icon: 'fa-puzzle-piece',      color: 'purple',  desc: '명화 그림 맞추기', url: 'puzzle.html' },
+      { name: '홀덤(포커)', icon: 'fa-diamond',           color: 'red',     desc: '카드로 즐기는 셈 놀이', soon: true },
+      { name: '바둑',      icon: 'fa-circle-half-stroke', color: 'sky',     desc: '한 수 한 수 깊은 생각', soon: true },
+      { name: '장기',      icon: 'fa-chess-knight',      color: 'amber',   desc: '옛 친구와 한 판 승부', soon: true }
+    ];
+
+    function renderGames() {
+      document.getElementById('gameCards').innerHTML = GAMES.map((g, i) =>
+        `<button onclick="playGame(${i})" class="w-full min-h-[96px] ${COLOR_BG[g.color]} border-2 rounded-3xl p-4 flex items-center justify-between gap-3 text-left shadow-sm active:scale-[0.98] transition">
+          <span class="flex items-center gap-3">
+            <span class="w-16 h-16 shrink-0 ${COLOR_ICON[g.color]} text-white rounded-2xl flex items-center justify-center text-3xl shadow"><i class="fa-solid ${g.icon}"></i></span>
+            <span><span class="text-[24px] font-black leading-tight">${esc(g.name)}</span>${g.soon ? ` <span class="align-middle bg-gray-800 text-white text-base font-black px-3 py-1 rounded-full whitespace-nowrap">준비 중</span>` : ''}<span class="text-lg font-bold block">${esc(g.desc)}</span></span>
+          </span>
+          ${g.soon ? '' : `<i class="fa-solid fa-chevron-right text-2xl"></i>`}
+        </button>`).join('');
+    }
+
+    function playGame(i) {
+      const g = GAMES[i];
+      if (g.soon) { showToast(`${g.name}은(는) 곧 열립니다. 조금만 기다려 주세요!`, true); return; }
+      const plays = lsGet('zzakkoong_plays', []);
+      plays.push({ at: new Date().toISOString(), game: g.name });
+      lsSet('zzakkoong_plays', plays.slice(-500));
+      touchLastSeen();
+      if (g.newWin) { window.open(g.url, '_blank', 'noopener'); renderBrainScore(); }
+      else { location.href = g.url; }
+    }
+
+    function touchLastSeen() { localStorage.setItem('zzakkoong_last_seen', new Date().toISOString()); }
+
+    function recordVisit() {
+      const prev = localStorage.getItem('zzakkoong_last_seen');
+      const gapHours = prev ? (Date.now() - new Date(prev).getTime()) / 3600000 : 0;
+      document.getElementById('aliveBanner').classList.toggle('hidden', !(gapHours >= 24));
+      const visits = lsGet('zzakkoong_visits', []);
+      const today = dateKey(new Date());
+      if (!visits.includes(today)) visits.push(today);
+      lsSet('zzakkoong_visits', visits.slice(-60));
+      touchLastSeen();
+    }
+
+    function renderBrainScore() {
+      const start = weekStart(new Date());
+      const startKey = dateKey(start);
+      const days = lsGet('zzakkoong_visits', []).filter(k => k >= startKey).length;
+      const plays = lsGet('zzakkoong_plays', []).filter(p => new Date(p.at) >= start).length;
+      document.getElementById('weekVisitDays').innerText = days;
+      document.getElementById('weekPlays').innerText = plays;
+    }
+
+    async function sendAliveAlert() {
+      const msgEl = document.getElementById('aliveMsg');
+      const r = await sendTelegram(`💛 [짝꿍 안부 알림]\n24시간 넘게 앱 접속이 없다가 방금 다시 들어오셨어요.\n${fmtKoreanDateTime(new Date())}\n안부 한 번 여쭤 주세요.`);
+      msgEl.innerText = r === 'ok' ? '짝꿍에게 안부 알림을 보냈어요.'
+        : r === 'nokey' ? '텔레그램 정보가 아직 없어요. 위쪽 [관리자]에서 넣어 주시거나, 짝꿍에게 직접 전화해 주세요.'
+        : '알림을 보내지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+      msgEl.classList.remove('hidden');
+      speakText(msgEl.innerText);
+    }
+
+    /* =====================================================
+       시작
+       ===================================================== */
+    function initApp() {
+      recordVisit();
+      renderCareChoices();
+      renderMatch();
+      renderLogCount();
+      renderLifeCats();
+      renderMyArea();
+      renderRequests();
+      renderGames();
+      renderBrainScore();
+      applyRole();
+      const role = localStorage.getItem('zzakkoong_role');
+      if (role !== 'receiver' && role !== 'giver') openRoleScreen();
+      const saved = parseInt(localStorage.getItem('zzakkoong_tab') || '1', 10);
+      selectTab([1, 2, 3].includes(saved) ? saved : 1);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) touchLastSeen(); });
+    initApp();
   </script>
 </body>
 </html>
