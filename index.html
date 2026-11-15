@@ -494,6 +494,13 @@
       closeApiKeyModal();
     }
 
+    // 말벗 대화 기억 (이 화면을 켜둔 동안만, 최근 5번 주고받은 내용 = 10개)
+    let chatHistory = [];
+    function rememberChat(userText, replyText) {
+      chatHistory.push({ role: 'user', content: userText }, { role: 'assistant', content: replyText });
+      chatHistory = chatHistory.slice(-10);
+    }
+
     async function processUserInput(query) {
       if (!query || query.trim() === '') return;
       const trimmed = query.trim();
@@ -535,10 +542,11 @@
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: trimmed, history: [] })
+          body: JSON.stringify({ message: trimmed, history: chatHistory })
         });
         const data = await res.json();
         if (res.ok && data.reply) {
+          rememberChat(trimmed, data.reply);
           showReply(data.reply); return;
         }
       } catch (err) {}
@@ -556,7 +564,9 @@
           });
           const data = await res.json();
           if (res.ok && data.candidates) {
-            showReply(data.candidates[0].content.parts[0].text); return;
+            const geminiReply = data.candidates[0].content.parts[0].text;
+            rememberChat(trimmed, geminiReply);
+            showReply(geminiReply); return;
           }
         } catch (err) {}
       }
