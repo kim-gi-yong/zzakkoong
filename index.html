@@ -494,11 +494,22 @@
       closeApiKeyModal();
     }
 
-    // 말벗 대화 기억 (이 화면을 켜둔 동안만, 최근 5번 주고받은 내용 = 10개)
-    let chatHistory = [];
+    // 말벗 대화 기억 (최근 5번 주고받은 내용 = 10개, 브라우저에 저장해 새로고침해도 유지)
+    const CHAT_HISTORY_KEY = 'zzakkoong_chat_history';
+    function loadChatHistory() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || '[]');
+        if (!Array.isArray(saved)) return [];
+        return saved
+          .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+          .slice(-10);
+      } catch (e) { return []; }
+    }
+    let chatHistory = loadChatHistory();
     function rememberChat(userText, replyText) {
       chatHistory.push({ role: 'user', content: userText }, { role: 'assistant', content: replyText });
       chatHistory = chatHistory.slice(-10);
+      try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatHistory)); } catch (e) {}
     }
 
     async function processUserInput(query) {
