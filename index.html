@@ -530,7 +530,20 @@
         showReply("카카오 택시 앱을 켜드릴게요."); return;
       }
 
-      // Gemini AI 대화 (gemini-1.5-flash 모델 적용)
+      // 1순위: LG K-EXAONE 말벗 (서버 함수 /api/chat, 키는 서버에만 있음)
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: trimmed, history: [] })
+        });
+        const data = await res.json();
+        if (res.ok && data.reply) {
+          showReply(data.reply); return;
+        }
+      } catch (err) {}
+
+      // 2순위(예비): Gemini AI 대화 (gemini-1.5-flash) — 설정에 키가 있을 때만
       const apiKey = localStorage.getItem('gemini_api_key');
       if (apiKey) {
         try {
@@ -548,7 +561,7 @@
         } catch (err) {}
       }
 
-      showReply(`"${trimmed}" 말씀하셨군요! 어르신 곁에 늘 '짝꿍'이 있으니 든든하게 생각하세요.`);
+      showReply("지금은 말벗 연결이 잠시 쉬고 있어요. 조금 뒤에 다시 말씀해 주세요.");
     }
 
     function showReply(reply) {
