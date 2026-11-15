@@ -109,6 +109,10 @@
               <input type="text" id="manualInput" placeholder="글자로 입력하셔도 됩니다" class="tap flex-1 min-w-0 border-2 border-gray-400 rounded-xl px-4 text-xl focus:border-indigo-600 outline-none" onkeydown="if(event.key === 'Enter') sendManualMessage()">
               <button onclick="sendManualMessage()" class="tap bg-indigo-700 active:bg-indigo-800 text-white font-bold px-5 rounded-xl text-xl shrink-0">전송</button>
             </div>
+
+            <button onclick="clearChatHistory()" class="tap w-full mt-3 bg-white border-2 border-gray-400 active:bg-gray-100 text-gray-800 font-bold rounded-xl text-lg py-2 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-trash-can"></i> 대화 지우기
+            </button>
           </div>
         </section>
 
@@ -510,6 +514,17 @@
       chatHistory.push({ role: 'user', content: userText }, { role: 'assistant', content: replyText });
       chatHistory = chatHistory.slice(-10);
       try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatHistory)); } catch (e) {}
+    }
+    function clearChatHistory() {
+      if (!confirm('짝꿍과 나눈 대화를 모두 지울까요?')) return;
+      chatHistory = [];
+      try { localStorage.removeItem(CHAT_HISTORY_KEY); } catch (e) {}
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+      document.getElementById('userText').innerText = '';
+      document.getElementById('aiText').innerText = '';
+      document.getElementById('userChatBox').classList.add('hidden');
+      document.getElementById('aiChatBox').classList.add('hidden');
+      document.getElementById('voiceStatus').innerText = '대화를 지웠어요. 새로 편하게 말씀하세요';
     }
 
     async function processUserInput(query) {
