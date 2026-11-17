@@ -40,25 +40,35 @@ module.exports = async function handler(req, res) {
     return res.status(500).json(FAIL);
   }
 
+  const payload = JSON.stringify({
+    model: 'k-exaone_v2.5',
+    reasoning_effort: 'low',
+    max_tokens: 512,
+    stream: false,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...cleanHistory(body.history),
+      { role: 'user', content: message.slice(0, 1000) },
+    ],
+  });
+
   try {
-    const r = await fetch(EXAONE_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'k-exaone_v2.5',
-        reasoning_effort: 'low',
-        max_tokens: 512,
-        stream: false,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...cleanHistory(body.history),
-          { role: 'user', content: message.slice(0, 1000) },
-        ],
-      }),
-    });
+    let r = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      r = await fetch(EXAONE_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: payload,
+      });
+      if (r.status !== 429 && r.status < 500) break;
+      if (attempt < 2) {
+        const waitMs = Math.min(2500, (Number(r.headers.get('retry-after')) || 1.5) * 1000);
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      }
+    }
 
     if (!r.ok) {
       console.error('[chat] EXAONE HTTP', r.status);
