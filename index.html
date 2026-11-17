@@ -95,6 +95,19 @@
             </div>
           </div>
 
+          <!-- 병원비 청구 한 번에 돕기 -->
+          <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <p class="text-xl font-black text-sky-900">🏥 병원비 청구 한 번에 돕기</p>
+                <p class="text-sm font-semibold text-sky-800">영수증·병명코드(KCD) 챙기고 도우미에게 바로 연결해요</p>
+              </div>
+              <button type="button" onclick="openClaimModal()" class="shrink-0 bg-sky-600 active:bg-sky-700 text-white text-base font-extrabold px-4 py-3 rounded-xl shadow-sm">
+                청구 돕기
+              </button>
+            </div>
+          </div>
+
           <!-- 디지털 짝꿍 (AI 말벗) -->
           <div class="border-t-2 border-gray-200 pt-4 flex flex-col items-center">
             <p class="text-2xl font-black text-gray-900 mb-1">디지털 짝꿍 (AI 말벗)</p>
@@ -2041,6 +2054,122 @@
           showToast('블루투스 연결을 확인해 주세요.', false);
         }
       }
+    }
+  </script>
+
+  <!-- 병원비 청구 도우미 모달 -->
+  <div id="claimModal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+        <h3 class="text-xl font-black text-gray-900">🏥 병원비 청구 한 번에 돕기</h3>
+        <button type="button" onclick="closeClaimModal()" class="text-2xl font-bold text-gray-500 px-2">✕</button>
+      </div>
+
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3.5 space-y-1.5">
+        <p class="text-base font-black text-amber-900">① 병원 가실 때 이 3가지 꼭 챙기세요 (반려 방지)</p>
+        <label class="flex items-center gap-2 text-base font-bold text-gray-800"><input type="checkbox" class="w-5 h-5 accent-amber-600"> 질병분류코드(KCD) 적힌 진료확인서·처방전</label>
+        <label class="flex items-center gap-2 text-base font-bold text-gray-800"><input type="checkbox" class="w-5 h-5 accent-amber-600"> 진료비 계산서·영수증</label>
+        <label class="flex items-center gap-2 text-base font-bold text-gray-800"><input type="checkbox" class="w-5 h-5 accent-amber-600"> 진료비 세부내역서 (검사·시술 있을 때)</label>
+      </div>
+
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3.5 space-y-2">
+        <p class="text-base font-black text-gray-900">② 주요 보험사 청구 전화 바로 연결</p>
+        <div class="grid grid-cols-2 gap-2 text-sm font-bold">
+          <a href="tel:15885114" class="bg-white border border-gray-200 rounded-xl p-2.5 text-center text-gray-800">삼성화재<br><span class="text-sky-700">1588-5114</span></a>
+          <a href="tel:15885656" class="bg-white border border-gray-200 rounded-xl p-2.5 text-center text-gray-800">현대해상<br><span class="text-sky-700">1588-5656</span></a>
+          <a href="tel:15880100" class="bg-white border border-gray-200 rounded-xl p-2.5 text-center text-gray-800">DB손해보험<br><span class="text-sky-700">1588-0100</span></a>
+          <a href="tel:15440114" class="bg-white border border-gray-200 rounded-xl p-2.5 text-center text-gray-800">KB손해보험<br><span class="text-sky-700">1544-0114</span></a>
+          <a href="tel:15667711" class="bg-white border border-gray-200 rounded-xl p-2.5 text-center text-gray-800">메리츠화재<br><span class="text-sky-700">1566-7711</span></a>
+          <a href="tel:15990100" class="bg-white border border-gray-200 rounded-xl p-2.5 text-center text-gray-800">우체국보험<br><span class="text-sky-700">1599-0100</span></a>
+        </div>
+        <p class="text-xs font-semibold text-gray-500">※ 병원 전산 자동 청구는 '실손24' 앱에서도 지원 병원이면 바로 가능합니다.</p>
+      </div>
+
+      <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3.5 space-y-2.5">
+        <p class="text-base font-black text-sky-900">③ 서류 사진 올리고 도우미에게 청구 도움 받기</p>
+        <input id="claimHospitalInput" type="text" placeholder="병원 이름 (예: 은평성모병원)" class="w-full px-3.5 py-2.5 rounded-xl border border-sky-300 text-base font-semibold bg-white" />
+        <input id="claimInsurerInput" type="text" placeholder="보험사 / 메모 (예: 삼성화재, 11월 진료)" class="w-full px-3.5 py-2.5 rounded-xl border border-sky-300 text-base font-semibold bg-white" />
+        <div class="flex items-center gap-2">
+          <label class="flex-1 text-center bg-white border-2 border-dashed border-sky-400 text-sky-800 font-bold text-sm py-2.5 px-3 rounded-xl cursor-pointer">
+            📸 영수증·진단서 사진 첨부
+            <input id="claimPhotoInput" type="file" accept="image/*" class="hidden" onchange="previewClaimPhoto(this)" />
+          </label>
+        </div>
+        <div id="claimPhotoPreviewWrap" class="hidden">
+          <img id="claimPhotoPreview" class="w-full max-h-40 object-contain rounded-xl border border-sky-200 bg-white" />
+        </div>
+        <button type="button" onclick="submitClaimHelp()" class="w-full bg-sky-600 active:bg-sky-700 text-white text-lg font-black py-3.5 rounded-xl shadow">
+          🙋 서류 확인·청구 도와주세요 요청 보내기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let claimPhotoData = '';
+    function openClaimModal() {
+      const m = document.getElementById('claimModal');
+      if (m) m.classList.remove('hidden');
+    }
+    function closeClaimModal() {
+      const m = document.getElementById('claimModal');
+      if (m) m.classList.add('hidden');
+    }
+    function previewClaimPhoto(input) {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 720;
+          const scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          claimPhotoData = canvas.toDataURL('image/jpeg', 0.75);
+          const prev = document.getElementById('claimPhotoPreview');
+          const wrap = document.getElementById('claimPhotoPreviewWrap');
+          if (prev) prev.src = claimPhotoData;
+          if (wrap) wrap.classList.remove('hidden');
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    async function submitClaimHelp() {
+      const hosp = (document.getElementById('claimHospitalInput')?.value || '').trim();
+      const ins = (document.getElementById('claimInsurerInput')?.value || '').trim();
+      if (!hosp && !ins && !claimPhotoData) {
+        showToast('병원 이름이나 서류 사진 중 하나는 넣어 주세요.', false);
+        return;
+      }
+      const author = (typeof getTalkName === 'function' ? getTalkName() : '') || localStorage.getItem('zzakkoong_kakao_name') || '어르신';
+      const now = new Date();
+      const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const detail = `[🏥 병원비 청구 도움] ${hosp || '병원'}${ins ? ' · ' + ins : ''}${claimPhotoData ? ' (서류 사진 첨부됨)' : ''}`;
+      const item = {
+        id: Date.now(),
+        type: 'need',
+        cat: '기타 도움',
+        author,
+        timeSlot: '편한 시간',
+        detail,
+        photo: claimPhotoData || '',
+        status: '기다리는 중',
+        createdAt: timeStr
+      };
+      if (typeof sbInsert === 'function') {
+        await sbInsert('help', item);
+        if (typeof loadSharedHelp === 'function') await loadSharedHelp();
+      }
+      claimPhotoData = '';
+      if (document.getElementById('claimHospitalInput')) document.getElementById('claimHospitalInput').value = '';
+      if (document.getElementById('claimInsurerInput')) document.getElementById('claimInsurerInput').value = '';
+      if (document.getElementById('claimPhotoPreviewWrap')) document.getElementById('claimPhotoPreviewWrap').classList.add('hidden');
+      closeClaimModal();
+      showToast('병원비 청구 도움 요청이 도우미에게 연결되었습니다! (실버당근 탭에서 확인 가능)', true);
     }
   </script>
 </body>
