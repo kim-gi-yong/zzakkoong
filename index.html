@@ -1873,10 +1873,10 @@
       selectTab([1, 2, 3].includes(saved) ? saved : 1);
     }
     document.addEventListener('visibilitychange', () => { if (!document.hidden) touchLastSeen(); });
-    checkKakaoReturn();
-    initApp();
-    syncAllFromSupabase();
-    setInterval(syncAllFromSupabase, 4000);
+    try { checkKakaoReturn(); } catch (e) { console.error(e); }
+    try { initApp(); } catch (e) { console.error(e); }
+    try { syncAllFromSupabase(); } catch (e) { console.error(e); }
+    setInterval(() => { try { syncAllFromSupabase(); } catch {} }, 4000);
   </script>
   <!-- 이용약관 / 개인정보 처리방침 모달 -->
   <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" onclick="if(event.target===this) closePolicyModal()">
