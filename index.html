@@ -232,13 +232,18 @@
             <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
           </div>
 
-          <button onclick="openLifeRequest()" class="w-full min-h-[96px] bg-red-600 active:bg-red-700 text-white text-[30px] font-black rounded-3xl flex items-center justify-center gap-3 shadow-lg">
-            <i class="fa-solid fa-hand text-4xl"></i> 도와주세요
-          </button>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button onclick="openLifeRequest()" class="w-full min-h-[92px] bg-red-600 active:bg-red-700 text-white text-[26px] font-black rounded-3xl flex items-center justify-center gap-2.5 shadow-lg px-3">
+              <i class="fa-solid fa-hand text-3xl"></i> 도와주세요
+            </button>
+            <button onclick="openLifeOffer()" class="w-full min-h-[92px] bg-emerald-600 active:bg-emerald-700 text-white text-[26px] font-black rounded-3xl flex items-center justify-center gap-2.5 shadow-lg px-3">
+              <i class="fa-solid fa-hands-helping text-3xl"></i> 도와드릴게요
+            </button>
+          </div>
 
-          <!-- 요청 작성 패널 -->
+          <!-- 요청 작성 패널 (도움이 필요해요) -->
           <section id="lifeRequestPanel" class="hidden bg-white rounded-3xl p-4 border-2 border-red-500 shadow-sm space-y-3">
-            <h2 class="text-[26px] font-black text-gray-900">무엇을 도와드릴까요?</h2>
+            <h2 class="text-[26px] font-black text-gray-900">🆘 무엇을 도와드릴까요?</h2>
             <label class="tap w-full bg-gray-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 cursor-pointer">
               <i class="fa-solid fa-camera text-2xl"></i> 사진 찍기 / 고르기 (안 해도 돼요)
               <input id="lifePhotoInput" type="file" accept="image/*" class="hidden" onchange="onLifePhoto(this)">
@@ -249,6 +254,20 @@
             <div class="grid grid-cols-2 gap-3">
               <button onclick="closeLifeRequest()" class="tap bg-gray-200 text-gray-900 text-xl font-bold rounded-2xl">취소</button>
               <button onclick="submitLifeRequest()" class="tap bg-red-600 text-white text-2xl font-black rounded-2xl shadow">올리기</button>
+            </div>
+          </section>
+
+          <!-- 도움 주기 작성 패널 (내가 도와드릴게요) -->
+          <section id="lifeOfferPanel" class="hidden bg-white rounded-3xl p-4 border-2 border-emerald-600 shadow-sm space-y-3">
+            <h2 class="text-[26px] font-black text-gray-900">💚 어떤 도움을 주실 수 있나요?</h2>
+            <p class="text-lg font-bold text-gray-700">이웃 어르신께 내가 잘하는 일, 가능한 시간을 올려 주세요.</p>
+            <div id="offerCatGrid" class="grid grid-cols-2 gap-3"></div>
+            <input id="offerName" type="text" placeholder="성함 또는 별명 (예: 행복동 김선생)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+            <input id="offerTime" type="text" placeholder="가능한 시간 (예: 평일 오전 / 주말)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+            <input id="offerText" type="text" placeholder="자세한 내용 (예: 형광등·문고리 고쳐드려요)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="closeLifeOffer()" class="tap bg-gray-200 text-gray-900 text-xl font-bold rounded-2xl">취소</button>
+              <button onclick="submitLifeOffer()" class="tap bg-emerald-600 text-white text-2xl font-black rounded-2xl shadow">도움 올리기</button>
             </div>
           </section>
 
@@ -278,6 +297,11 @@
           <h2 class="text-[26px] font-black text-gray-900 px-1 flex items-center gap-2">
             <i class="fa-solid fa-list-check text-emerald-700"></i> 우리 동네 도움 목록
           </h2>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="filterAll" onclick="setListFilter('all')" class="tap rounded-2xl text-lg font-black border-2 bg-gray-900 text-white border-gray-900">전체 보기</button>
+            <button id="filterAsk" onclick="setListFilter('ask')" class="tap rounded-2xl text-lg font-black border-2 bg-white text-red-700 border-red-400">🆘 도와주세요</button>
+            <button id="filterOffer" onclick="setListFilter('offer')" class="tap rounded-2xl text-lg font-black border-2 bg-white text-emerald-800 border-emerald-500">💚 도와드릴게요</button>
+          </div>
           <div id="requestList" class="space-y-3"></div>
         </section>
 
@@ -1033,7 +1057,7 @@
     const STATUSES = ['기다리는 중', '짝꿍 찾음', '완료'];
     const STATUS_STYLE = { '기다리는 중': 'bg-red-100 text-red-900 border-red-500', '짝꿍 찾음': 'bg-sky-100 text-sky-900 border-sky-600', '완료': 'bg-emerald-100 text-emerald-900 border-emerald-600' };
 
-    let lifeCat = null, lifePhoto = '';
+    let lifeCat = null, offerCat = null, lifePhoto = '', listFilter = 'all';
 
     function renderLifeCats() {
       document.getElementById('lifeCatCards').innerHTML = LIFE_CATS.map((c, i) =>
@@ -1043,11 +1067,18 @@
         </button>`).join('');
       document.getElementById('lifeCatGrid').innerHTML = LIFE_CATS.map((c, i) =>
         choiceButton(c, lifeCat === c.name, `pickLifeCat(${i})`)).join('');
+      const og = document.getElementById('offerCatGrid');
+      if (og) {
+        og.innerHTML = LIFE_CATS.map((c, i) =>
+          choiceButton(c, offerCat === c.name, `pickOfferCat(${i})`)).join('');
+      }
     }
 
     function pickLifeCat(i) { lifeCat = LIFE_CATS[i].name; renderLifeCats(); }
+    function pickOfferCat(i) { offerCat = LIFE_CATS[i].name; renderLifeCats(); }
 
     function openLifeRequest(i) {
+      closeLifeOffer();
       if (typeof i === 'number') lifeCat = LIFE_CATS[i].name;
       renderLifeCats();
       const p = document.getElementById('lifeRequestPanel');
@@ -1063,6 +1094,59 @@
       const prev = document.getElementById('lifePhotoPreview');
       prev.classList.add('hidden'); prev.removeAttribute('src');
       renderLifeCats();
+    }
+
+    function openLifeOffer() {
+      closeLifeRequest();
+      renderLifeCats();
+      const p = document.getElementById('lifeOfferPanel');
+      p.classList.remove('hidden');
+      p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeLifeOffer() {
+      const p = document.getElementById('lifeOfferPanel');
+      if (p) p.classList.add('hidden');
+      offerCat = null;
+      const n = document.getElementById('offerName'); if (n) n.value = '';
+      const t = document.getElementById('offerTime'); if (t) t.value = '';
+      const x = document.getElementById('offerText'); if (x) x.value = '';
+      renderLifeCats();
+    }
+
+    async function submitLifeOffer() {
+      if (!offerCat) { showToast('주실 수 있는 도움을 하나 골라 주세요.', true); return; }
+      const helperName = document.getElementById('offerName').value.trim() || '동네 짝꿍';
+      const slot = document.getElementById('offerTime').value.trim();
+      const text = document.getElementById('offerText').value.trim();
+      const req = {
+        id: Date.now(), kind: 'offer', category: offerCat, slot,
+        helperName, text, photo: '',
+        area: myArea(), status: '기다리는 중', createdAt: new Date().toISOString()
+      };
+      const list = lsGet('zzakkoong_requests', []);
+      list.push(req);
+      saveRequestsSafe(list);
+      const cat = offerCat;
+      closeLifeOffer();
+      renderRequests();
+      showToast('고맙습니다! 도와드릴 수 있는 이웃으로 올라갔어요.', true);
+      sendTelegram(`💚 [실버당근 도움 나눔 등록]\n${cat} / ${helperName}${req.area ? ' / ' + req.area : ''}${slot ? ' / ' + slot : ''}${text ? '\n' + text : ''}`);
+    }
+
+    function setListFilter(f) {
+      listFilter = f;
+      const styles = {
+        all: ['bg-gray-900 text-white border-gray-900', 'bg-white text-gray-800 border-gray-400'],
+        ask: ['bg-red-600 text-white border-red-600', 'bg-white text-red-700 border-red-400'],
+        offer: ['bg-emerald-600 text-white border-emerald-600', 'bg-white text-emerald-800 border-emerald-500']
+      };
+      ['all', 'ask', 'offer'].forEach(k => {
+        const btn = document.getElementById('filter' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (!btn) return;
+        btn.className = 'tap rounded-2xl text-lg font-black border-2 ' + (f === k ? styles[k][0] : styles[k][1]);
+      });
+      renderRequests();
     }
 
     // 300KB 초과 사진은 canvas 로 가로 800px 로 줄여 저장
@@ -1142,26 +1226,44 @@
     }
 
     function renderRequests() {
-      const list = lsGet('zzakkoong_requests', []).slice().reverse();
+      let list = lsGet('zzakkoong_requests', []).slice().reverse();
+      if (listFilter === 'ask') list = list.filter(r => r.kind !== 'offer');
+      if (listFilter === 'offer') list = list.filter(r => r.kind === 'offer');
       const box = document.getElementById('requestList');
       if (!list.length) {
-        box.innerHTML = `<div class="bg-white border-2 border-gray-300 rounded-2xl p-5 text-center text-xl font-bold text-gray-900">아직 올라온 요청이 없어요.</div>`;
+        const emptyMsg = listFilter === 'offer'
+          ? '아직 올라온 도움 나눔이 없어요. 위 초록색 [도와드릴게요] 버튼으로 올려 보세요!'
+          : '아직 올라온 글이 없어요.';
+        box.innerHTML = `<div class="bg-white border-2 border-gray-300 rounded-2xl p-5 text-center text-xl font-bold text-gray-900">${emptyMsg}</div>`;
         return;
       }
       box.innerHTML = list.map(r => {
         const m = catMeta(r);
-        return `<article class="bg-white border-2 border-gray-300 rounded-3xl overflow-hidden shadow-sm">
+        const isOffer = r.kind === 'offer';
+        const kindBadge = isOffer
+          ? '<span class="bg-emerald-100 text-emerald-900 border border-emerald-500 text-sm font-black px-2.5 py-0.5 rounded-full">💚 도와드릴게요</span>'
+          : '<span class="bg-red-100 text-red-900 border border-red-400 text-sm font-black px-2.5 py-0.5 rounded-full">🆘 도와주세요</span>';
+        const quickBtn = r.status === '기다리는 중'
+          ? `<button onclick="connectMatch(${r.id}, ${isOffer})" class="tap w-full ${isOffer ? 'bg-emerald-600' : 'bg-sky-600'} text-white text-xl font-black rounded-2xl shadow">
+              ${isOffer ? '🤝 이분께 도움 부탁하기' : '✋ 제가 도와드릴게요'}
+            </button>`
+          : '';
+        return `<article class="bg-white border-2 ${isOffer ? 'border-emerald-400' : 'border-gray-300'} rounded-3xl overflow-hidden shadow-sm">
           ${r.photo ? `<img src="${r.photo}" alt="${esc(r.category)} 사진" class="w-full max-h-60 object-cover">` : ''}
-          <div class="p-4 space-y-2">
-            <div class="flex items-center justify-between gap-2">
+          <div class="p-4 space-y-2.5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="flex items-center gap-2 text-[22px] font-black text-gray-900">
                 <span class="w-11 h-11 shrink-0 ${COLOR_ICON[m.color]} text-white rounded-xl flex items-center justify-center text-xl"><i class="fa-solid ${m.icon}"></i></span>
-                ${esc(r.category)}
+                <span>${esc(r.category)}</span>
               </span>
-              <span class="border-2 ${STATUS_STYLE[r.status] || STATUS_STYLE['기다리는 중']} text-base font-black px-3 py-1 rounded-full whitespace-nowrap">${esc(r.status)}</span>
+              <div class="flex items-center gap-1.5">
+                ${kindBadge}
+                <span class="border-2 ${STATUS_STYLE[r.status] || STATUS_STYLE['기다리는 중']} text-base font-black px-3 py-1 rounded-full whitespace-nowrap">${esc(r.status)}</span>
+              </div>
             </div>
-            <p class="text-lg font-bold text-gray-800"><i class="fa-solid fa-location-dot"></i> ${esc(r.area || '동네 미입력')} · <i class="fa-regular fa-clock"></i> ${esc(fmtShort(r.createdAt))}${r.slot ? ' · ' + esc(r.slot) : ''}</p>
+            <p class="text-lg font-bold text-gray-800">${isOffer && r.helperName ? `<i class="fa-solid fa-user text-emerald-700"></i> ${esc(r.helperName)} · ` : ''}<i class="fa-solid fa-location-dot"></i> ${esc(r.area || '동네 미입력')} · <i class="fa-regular fa-clock"></i> ${esc(fmtShort(r.createdAt))}${r.slot ? ' · ' + esc(r.slot) : ''}</p>
             ${r.text ? `<p class="text-xl font-bold text-gray-900">${esc(r.text)}</p>` : ''}
+            ${quickBtn}
             <div class="grid grid-cols-3 gap-3 pt-1">
               ${STATUSES.map(s => `<button onclick="setRequestStatus(${r.id}, '${s}')" class="tap rounded-2xl text-lg font-black border-2 ${r.status === s ? STATUS_STYLE[s] + ' chip-on' : 'bg-white border-gray-400 text-gray-900'}">${s}</button>`).join('')}
             </div>
@@ -1169,6 +1271,20 @@
           </div>
         </article>`;
       }).join('');
+    }
+
+    function connectMatch(id, isOffer) {
+      const list = lsGet('zzakkoong_requests', []);
+      const r = list.find(x => x.id === id);
+      if (!r) return;
+      r.status = '짝꿍 찾음';
+      saveRequestsSafe(list);
+      renderRequests();
+      const msg = isOffer
+        ? `${r.helperName || '이웃'} 님께 도움 부탁이 연결되었어요!`
+        : '고맙습니다! 짝꿍으로 연결되었어요.';
+      showToast(msg, true);
+      speakText(msg);
     }
 
     function setRequestStatus(id, status) {
