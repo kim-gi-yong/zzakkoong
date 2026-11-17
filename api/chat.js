@@ -23,47 +23,38 @@ function cleanHistory(history) {
 
 async function askExaone(apiKey, history, message) {
   if (!apiKey) return null;
-  const payload = JSON.stringify({
-    model: 'k-exaone_v2.5',
-    reasoning_effort: 'low',
-    max_tokens: 512,
-    stream: false,
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...history,
-      { role: 'user', content: message },
-    ],
-  });
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const r = await fetch(EXAONE_URL, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: payload,
-        signal: AbortSignal.timeout(5500),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        const content = data?.choices?.[0]?.message?.content;
-        const reply = typeof content === 'string' ? content.trim() : '';
-        if (reply) return reply;
-      } else {
-        console.error('[chat] EXAONE HTTP', r.status);
-        if (r.status !== 429 && r.status < 500) return null;
-      }
-    } catch (err) {
-      console.error('[chat] EXAONE 호출 실패:', err && err.name, err && err.cause && err.cause.code);
+  try {
+    const r = await fetch(EXAONE_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'k-exaone_v2.5',
+        reasoning_effort: 'low',
+        max_tokens: 512,
+        stream: false,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...history,
+          { role: 'user', content: message },
+        ],
+      }),
+      signal: AbortSignal.timeout(3500),
+    });
+    if (!r.ok) {
+      console.error('[chat] EXAONE HTTP', r.status);
       return null;
     }
-    if (attempt === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-    }
+    const data = await r.json();
+    const content = data?.choices?.[0]?.message?.content;
+    const reply = typeof content === 'string' ? content.trim() : '';
+    return reply || null;
+  } catch (err) {
+    console.error('[chat] EXAONE 호출 실패:', err && err.name);
+    return null;
   }
-  return null;
 }
 
 async function askGemini(geminiKey, history, message) {
@@ -86,7 +77,7 @@ async function askGemini(geminiKey, history, message) {
         contents,
         generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
       }),
-      signal: AbortSignal.timeout(5500),
+      signal: AbortSignal.timeout(8500),
     });
     if (!r.ok) {
       console.error('[chat] Gemini HTTP', r.status);
