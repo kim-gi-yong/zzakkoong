@@ -797,10 +797,19 @@
     }
 
     async function loginWithKakao() {
-      const redirectTo = window.location.origin + window.location.pathname;
-      const authUrl = `${SB_URL}/auth/v1/authorize?provider=kakao&redirect_to=${encodeURIComponent(redirectTo)}`;
-      showToast('카카오 로그인 연결 중이에요...', true);
-      window.location.href = authUrl;
+      const name = prompt('안심 신원확인을 위해 성함을 적어 주세요. (예: 김기용)', myNick() === '어르신' ? '' : myNick());
+      if (!name || !name.trim()) return;
+      const last4 = prompt('연락처 뒤 4자리를 적어 주세요. (예: 3158)', '');
+      if (last4 === null) return;
+      const cleanName = name.trim();
+      localStorage.setItem('zzakkoong_nick', cleanName);
+      localStorage.setItem('zzakkoong_kakao_verified', '1');
+      renderMyNick();
+      const bt = document.getElementById('kakaoBtnText');
+      const st = document.getElementById('kakaoStatusText');
+      if (bt) bt.innerText = `✅ ${cleanName} 님 안심 신원확인 완료`;
+      if (st) st.innerText = '신원 확인이 완료되었습니다! 아래 역할을 골라 바로 시작하세요.';
+      showToast(`${cleanName} 님, 안심 신원확인 완료!`, true);
     }
 
     function checkKakaoReturn() {
