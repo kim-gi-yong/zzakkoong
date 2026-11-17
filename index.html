@@ -281,6 +281,15 @@
             <input id="offerName" type="text" placeholder="성함 또는 별명 (예: 행복동 김선생)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
             <input id="offerTime" type="text" placeholder="가능한 시간 (예: 평일 오전 / 주말)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
             <input id="offerText" type="text" placeholder="자세한 내용 (예: 형광등·문고리 고쳐드려요)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+            <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 space-y-2">
+              <p class="text-lg font-black text-amber-950">💰 감사의 용돈 받을 계좌 (선택)</p>
+              <p class="text-sm font-bold text-gray-700">게시판에는 숨겨지고, '짝꿍 연결'된 분께만 보여요.</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input id="offerBank" type="text" placeholder="은행 (예: 농협)" class="tap w-full border-2 border-gray-300 bg-white rounded-xl px-3 text-lg outline-none focus:border-emerald-600">
+                <input id="offerAccount" type="text" placeholder="계좌번호 (- 없이)" class="tap w-full border-2 border-gray-300 bg-white rounded-xl px-3 text-lg outline-none focus:border-emerald-600">
+                <input id="offerHolder" type="text" placeholder="예금주" class="tap w-full border-2 border-gray-300 bg-white rounded-xl px-3 text-lg outline-none focus:border-emerald-600">
+              </div>
+            </div>
             <div class="grid grid-cols-2 gap-3">
               <button onclick="closeLifeOffer()" class="tap bg-gray-200 text-gray-900 text-xl font-bold rounded-2xl">취소</button>
               <button onclick="submitLifeOffer()" class="tap bg-emerald-600 text-white text-2xl font-black rounded-2xl shadow">도움 올리기</button>
@@ -405,8 +414,14 @@
       <div class="w-full max-w-4xl bg-white min-h-screen flex flex-col justify-center p-6 space-y-6">
         <div class="text-center space-y-2">
           <i class="fa-solid fa-hand-holding-hand text-6xl text-emerald-700"></i>
-          <h2 class="text-[32px] font-black text-gray-900">짝꿍 2.0</h2>
+          <h2 class="text-[32px] font-black text-gray-900">짝꿍 2.0 · 안심 신원확인</h2>
           <p class="text-2xl font-bold text-gray-900">나는 어떤 쪽인가요?</p>
+        </div>
+        <div id="kakaoLoginBox" class="bg-yellow-50 border-2 border-yellow-400 rounded-2xl p-3 space-y-2 text-center">
+          <button onclick="loginWithKakao()" class="tap w-full bg-[#FEE500] active:bg-yellow-400 text-[#191919] text-xl font-black rounded-xl shadow flex items-center justify-center gap-2">
+            <i class="fa-solid fa-comment text-2xl"></i> <span id="kakaoBtnText">카카오톡으로 3초 신원확인</span>
+          </button>
+          <p id="kakaoStatusText" class="text-sm font-bold text-gray-700">서로 안심하고 돕기 위해 카카오로 신원을 확인해요 (체험 시 아래 역할 바로 선택 가능)</p>
         </div>
         <button onclick="chooseRole('receiver')" class="w-full min-h-[120px] bg-rose-600 active:bg-rose-700 text-white rounded-3xl flex items-center justify-center gap-4 shadow-lg">
           <i class="fa-solid fa-house-user text-5xl"></i>
@@ -771,6 +786,53 @@
       'Authorization': 'Bearer ' + SB_KEY,
       'Content-Type': 'application/json'
     };
+
+    async function copyAccount(txt) {
+      let ok = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(txt.trim()); ok = true; }
+      } catch {}
+      if (!ok) ok = fallbackCopy(txt.trim());
+      showToast(ok ? '계좌번호를 복사했어요! 은행 앱에 붙여넣기 하세요.' : '복사할 수 없어요. 숫자를 보고 입력해 주세요.', true);
+    }
+
+    async function loginWithKakao() {
+      const redirectTo = window.location.origin + window.location.pathname;
+      const authUrl = `${SB_URL}/auth/v1/authorize?provider=kakao&redirect_to=${encodeURIComponent(redirectTo)}`;
+      showToast('카카오 로그인 연결 중이에요...', true);
+      window.location.href = authUrl;
+    }
+
+    function checkKakaoReturn() {
+      const hash = window.location.hash || '';
+      if (hash.includes('access_token=')) {
+        const params = new URLSearchParams(hash.replace(/^#/, ''));
+        const token = params.get('access_token');
+        if (token) {
+          fetch(`${SB_URL}/auth/v1/user`, {
+            headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + token }
+          }).then(r => r.json()).then(u => {
+            const name = u?.user_metadata?.name || u?.user_metadata?.full_name || u?.user_metadata?.preferred_username || '';
+            if (name) {
+              localStorage.setItem('zzakkoong_nick', name);
+              localStorage.setItem('zzakkoong_kakao_verified', '1');
+              renderMyNick();
+              const bt = document.getElementById('kakaoBtnText');
+              const st = document.getElementById('kakaoStatusText');
+              if (bt) bt.innerText = `✅ ${name} 님 카카오 신원확인 완료`;
+              if (st) st.innerText = '신원 확인이 완료되었습니다. 아래 역할을 골라 시작하세요!';
+              showToast(`${name} 님, 카카오 신원확인 완료!`, true);
+            }
+          }).catch(() => {});
+          history.replaceState(null, '', window.location.pathname);
+        }
+      } else if (localStorage.getItem('zzakkoong_kakao_verified') === '1') {
+        const bt = document.getElementById('kakaoBtnText');
+        const st = document.getElementById('kakaoStatusText');
+        if (bt) bt.innerText = `✅ ${myNick()} 님 카카오 신원확인됨`;
+        if (st) st.innerText = '카카오로 신원 확인이 되어 있습니다.';
+      }
+    }
 
     function myNick() {
       return (localStorage.getItem('zzakkoong_nick') || '').trim() || '어르신';
@@ -1281,6 +1343,7 @@
       const n = document.getElementById('offerName'); if (n) n.value = '';
       const t = document.getElementById('offerTime'); if (t) t.value = '';
       const x = document.getElementById('offerText'); if (x) x.value = '';
+      ['offerBank','offerAccount','offerHolder'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       renderLifeCats();
     }
 
@@ -1289,9 +1352,13 @@
       const helperName = document.getElementById('offerName').value.trim() || '동네 짝꿍';
       const slot = document.getElementById('offerTime').value.trim();
       const text = document.getElementById('offerText').value.trim();
+      const bank = (document.getElementById('offerBank')?.value || '').trim();
+      const account = (document.getElementById('offerAccount')?.value || '').trim();
+      const holder = (document.getElementById('offerHolder')?.value || '').trim();
       const req = {
         id: Date.now(), kind: 'offer', category: offerCat, slot,
         helperName, text, photo: '',
+        bank, account, holder,
         area: myArea(), status: '기다리는 중', createdAt: new Date().toISOString()
       };
       const list = lsGet('zzakkoong_requests', []);
@@ -1436,6 +1503,17 @@
             </div>
             <p class="text-lg font-bold text-gray-800">${isOffer && r.helperName ? `<i class="fa-solid fa-user text-emerald-700"></i> ${esc(r.helperName)} · ` : ''}<i class="fa-solid fa-location-dot"></i> ${esc(r.area || '동네 미입력')} · <i class="fa-regular fa-clock"></i> ${esc(fmtShort(r.createdAt))}${r.slot ? ' · ' + esc(r.slot) : ''}</p>
             ${r.text ? `<p class="text-xl font-bold text-gray-900">${esc(r.text)}</p>` : ''}
+            ${isOffer && r.account ? (
+              r.status === '기다리는 중'
+                ? `<p class="inline-block bg-amber-100 text-amber-900 border border-amber-400 text-sm font-black px-3 py-1 rounded-xl">💰 용돈 계좌 등록됨 (짝꿍 연결 시 공개)</p>`
+                : `<div class="bg-amber-50 border-2 border-amber-400 rounded-2xl p-3 flex items-center justify-between gap-2 flex-wrap">
+                    <div>
+                      <p class="text-sm font-black text-amber-900">💰 감사의 용돈 보내실 계좌</p>
+                      <p class="text-lg font-black text-gray-950">${esc(r.bank || '')} ${esc(r.account)} (${esc(r.holder || r.helperName || '')})</p>
+                    </div>
+                    <button onclick="copyAccount('${esc(r.bank || '')} ${esc(r.account)}')" class="tap bg-amber-400 text-gray-950 text-base font-black px-3.5 rounded-xl">📋 복사</button>
+                  </div>`
+            ) : ''}
             ${quickBtn}
             <div class="grid grid-cols-3 gap-3 pt-1">
               ${STATUSES.map(s => `<button onclick="setRequestStatus(${r.id}, '${s}')" class="tap rounded-2xl text-lg font-black border-2 ${r.status === s ? STATUS_STYLE[s] + ' chip-on' : 'bg-white border-gray-400 text-gray-900'}">${s}</button>`).join('')}
@@ -1612,6 +1690,7 @@
       selectTab([1, 2, 3].includes(saved) ? saved : 1);
     }
     document.addEventListener('visibilitychange', () => { if (!document.hidden) touchLastSeen(); });
+    checkKakaoReturn();
     initApp();
     syncAllFromSupabase();
     setInterval(syncAllFromSupabase, 4000);
