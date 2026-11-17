@@ -813,8 +813,8 @@
         showToast('이용약관과 개인정보 처리방침에 먼저 동의해 주세요.', false);
         return;
       }
-      const redirectTo = window.location.origin + window.location.pathname;
-      const authUrl = `${SB_URL}/auth/v1/authorize?provider=kakao&scopes=profile_nickname&redirect_to=${encodeURIComponent(redirectTo)}`;
+      const redirectUri = window.location.origin + '/api/kakao-callback';
+      const authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=3fd063a11398b5d3713614debec0dd6c&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=profile_nickname`;
       showToast('카카오톡 안전 로그인으로 이동합니다...', true);
       window.location.href = authUrl;
     }
@@ -861,6 +861,27 @@
     }
 
     function checkKakaoReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const kNick = params.get('kakao_nick');
+      const kUid = params.get('kakao_uid');
+      const kErr = params.get('kakao_error');
+      if (kErr) {
+        window.history.replaceState(null, '', window.location.pathname);
+        showToast('카카오 로그인을 다시 시도해 주세요.', false);
+      }
+      if (kNick) {
+        localStorage.setItem('zzakkoong_nick', kNick);
+        localStorage.setItem('zzakkoong_kakao_verified', '1');
+        if (kUid) localStorage.setItem('zzakkoong_kakao_uid', kUid);
+        renderMyNick();
+        const bt = document.getElementById('kakaoBtnText');
+        const st = document.getElementById('kakaoStatusText');
+        if (bt) bt.innerText = `✅ ${kNick} 님 카카오 신원확인 완료`;
+        if (st) st.innerText = '카카오 본인 확인이 완료되었습니다! 아래 역할을 골라 시작하세요.';
+        window.history.replaceState(null, '', window.location.pathname);
+        showToast(`${kNick} 님, 카카오 안심 신원확인 완료!`, true);
+        return;
+      }
       const hash = window.location.hash || '';
       if (hash.includes('access_token=')) {
         const params = new URLSearchParams(hash.replace(/^#/, ''));
