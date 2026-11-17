@@ -613,18 +613,77 @@
       if (input.value.trim() !== '') { processUserInput(input.value); input.value = ''; }
     }
 
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = null;
-    if ('webkitSpeechRecognition' in window) {
-      recognition = new window.webkitSpeechRecognition();
+    let isListening = false;
+    let gotSpeechResult = false;
+
+    function setMicUI(listening) {
+      isListening = listening;
+      const btn = document.getElementById('micBtn');
+      const label = document.getElementById('micLabel');
+      if (!btn || !label) return;
+      if (listening) {
+        btn.classList.remove('from-indigo-700', 'to-blue-600');
+        btn.classList.add('from-rose-600', 'to-red-500', 'animate-pulse');
+        label.innerText = '듣는 중...';
+      } else {
+        btn.classList.remove('from-rose-600', 'to-red-500', 'animate-pulse');
+        btn.classList.add('from-indigo-700', 'to-blue-600');
+        label.innerText = '말씀하기';
+      }
+    }
+
+    if (SpeechRec) {
+      recognition = new SpeechRec();
       recognition.lang = 'ko-KR';
-      recognition.onstart = () => document.getElementById('voiceStatus').innerText = "네, 지금 말씀하세요!";
-      recognition.onresult = (event) => processUserInput(event.results[0][0].transcript);
-      recognition.onerror = () => document.getElementById('voiceStatus').innerText = "잘 듣지 못했어요. 다시 눌러주세요.";
-      recognition.onend = () => document.getElementById('voiceStatus').innerText = "마이크를 누르고 말씀해 보세요";
+      recognition.interimResults = false;
+      recognition.continuous = false;
+      recognition.onstart = () => {
+        gotSpeechResult = false;
+        setMicUI(true);
+        document.getElementById('voiceStatus').innerText = "네, 지금 편하게 말씀하세요!";
+      };
+      recognition.onresult = (event) => {
+        gotSpeechResult = true;
+        const transcript = event.results[0][0].transcript;
+        setMicUI(false);
+        processUserInput(transcript);
+      };
+      recognition.onerror = (event) => {
+        setMicUI(false);
+        const err = event && event.error;
+        if (err === 'not-allowed' || err === 'service-not-allowed') {
+          document.getElementById('voiceStatus').innerText = "크롬 상단 자물쇠에서 마이크 권한을 허용해 주세요.";
+        } else if (err === 'no-speech') {
+          document.getElementById('voiceStatus').innerText = "목소리가 안 들렸어요. 다시 눌러 말씀해 주세요.";
+        } else {
+          document.getElementById('voiceStatus').innerText = "잘 듣지 못했어요. 다시 눌러 말씀해 주세요.";
+        }
+      };
+      recognition.onend = () => {
+        setMicUI(false);
+        if (!gotSpeechResult && document.getElementById('voiceStatus').innerText === "네, 지금 편하게 말씀하세요!") {
+          document.getElementById('voiceStatus').innerText = "마이크를 누르고 말씀해 보세요";
+        }
+      };
     }
 
     function toggleSpeechRecognition() {
-      if (recognition) recognition.start();
+      if (!recognition) {
+        document.getElementById('voiceStatus').innerText = "이 브라우저에서는 음성이 지원되지 않아요. 아래 글자 칸을 이용해 주세요.";
+        return;
+      }
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+      if (isListening) {
+        try { recognition.stop(); } catch (e) {}
+        return;
+      }
+      try {
+        recognition.start();
+      } catch (e) {
+        setMicUI(false);
+      }
     }
 
     /* =====================================================
