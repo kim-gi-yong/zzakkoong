@@ -2252,6 +2252,9 @@
       if (document.getElementById('claimHospitalInput')) document.getElementById('claimHospitalInput').value = '';
       if (document.getElementById('claimInsurerInput')) document.getElementById('claimInsurerInput').value = '';
       if (document.getElementById('claimPhotoPreviewWrap')) document.getElementById('claimPhotoPreviewWrap').classList.add('hidden');
+      if (typeof sendTelegram === 'function') {
+        await sendTelegram(`🏥 [병원비 청구 도움 요청]\n• 보낸분: ${author}\n• 내용: ${detail}`);
+      }
       closeClaimModal();
       if (typeof selectTab === 'function') selectTab(2);
       showToast('병원비 청구 도움 요청이 올라갔습니다! 아래에서 확인해 보세요.', true);
@@ -2341,6 +2344,9 @@
       const createdAt = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
       if (typeof sbInsert === 'function') {
         await sbInsert('feedback', { author, category, text, createdAt });
+      }
+      if (typeof sendTelegram === 'function') {
+        await sendTelegram(`💬 [짝꿍 불편·건의 접수]\n• 종류: ${category}\n• 보낸분: ${author}\n• 내용: ${text}`);
       }
       try {
         await fetch('/api/feedback', {
