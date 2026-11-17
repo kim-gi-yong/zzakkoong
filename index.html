@@ -31,6 +31,10 @@
         <h1 class="text-[28px] font-black tracking-tight">짝꿍 2.0</h1>
       </div>
       <div class="flex gap-2">
+        <button type="button" onclick="inviteByKakao()" class="tap bg-amber-300 active:bg-amber-400 text-gray-950 text-base font-black px-3 rounded-2xl flex flex-col items-center justify-center leading-tight shadow">
+          <i class="fa-solid fa-comment text-lg"></i>
+          <span>초대</span>
+        </button>
         <button onclick="openRoleScreen()" class="tap bg-emerald-900 active:bg-black text-white text-base font-bold px-3 rounded-2xl flex flex-col items-center justify-center leading-tight shadow">
           <i class="fa-solid fa-repeat text-lg"></i>
           <span id="roleBadge">역할 바꾸기</span>
@@ -190,7 +194,7 @@
             </h2>
             <div class="flex items-center gap-1.5">
               <button onclick="changeMyNick()" class="bg-gray-100 active:bg-gray-200 border border-gray-400 text-gray-900 text-sm font-extrabold px-3 py-1 rounded-full">👤 <span id="myNickLabel">나 (어르신)</span></button>
-              <span class="bg-emerald-100 text-emerald-900 border border-emerald-400 text-sm font-extrabold px-3 py-1 rounded-full">● 실시간 공용</span>
+              <span class="bg-emerald-100 text-emerald-900 border border-emerald-400 text-sm font-extrabold px-3 py-1 rounded-full">● 실시간 공용</span> <button type="button" onclick="inviteByKakao()" class="text-xs font-black text-gray-950 bg-amber-300 border border-amber-500 px-2.5 py-1 rounded-lg ml-1">💌 카톡 초대</button>
             </div>
           </div>
           <p class="text-xl text-gray-800">동네 짝꿍·친구 어르신들과 안부와 나의 근황(자식·손주·일상 사진)을 나눠요.</p>
@@ -2247,6 +2251,48 @@
       closeClaimModal();
       if (typeof selectTab === 'function') selectTab(2);
       showToast('병원비 청구 도움 요청이 올라갔습니다! 아래에서 확인해 보세요.', true);
+    }
+  </script>
+
+  <script>
+    async function inviteByKakao() {
+      const shareUrl = 'https://zzakkoong.vercel.app';
+      const inviter = localStorage.getItem('zzakkoong_kakao_name') || localStorage.getItem('zzakkoong_talk_name') || '김기용';
+      const shareText = `${inviter} 님이 '짝꿍 2.0' 시니어 돌봄·동네 톡방에 초대했어요! 아래 눌러서 바로 들어오세요.`;
+      try {
+        if (window.Kakao) {
+          if (!window.Kakao.isInitialized()) {
+            window.Kakao.init('ef1424c8b8833ead777d0612ae59694e');
+          }
+          if (window.Kakao.Share && typeof window.Kakao.Share.sendDefault === 'function') {
+            window.Kakao.Share.sendDefault({
+              objectType: 'feed',
+              content: {
+                title: '짝꿍 2.0 · 시니어 돌봄 & 동네 사랑방',
+                description: shareText,
+                imageUrl: 'https://zzakkoong.vercel.app/icon-512.png',
+                link: { mobileWebUrl: shareUrl, webUrl: shareUrl }
+              },
+              buttons: [
+                { title: '짝꿍 바로 열기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }
+              ]
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: '짝꿍 2.0 초대', text: shareText, url: shareUrl });
+          return;
+        } catch (e) {}
+      }
+      try {
+        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+        showToast('초대 주소가 복사되었습니다! 카톡에 붙여넣기 하세요.', true);
+      } catch (e) {
+        showToast('초대 주소: https://zzakkoong.vercel.app', true);
+      }
     }
   </script>
 </body>
