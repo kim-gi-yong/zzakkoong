@@ -1629,7 +1629,7 @@
 
     function catMeta(req) {
       if (req.kind === 'care') return CARE_SERVICES.find(s => s.name === req.category) || CARE_SERVICES[4];
-      return LIFE_CATS.find(c => c.name === req.category) || LIFE_CATS[0];
+      return LIFE_CATS.find(c => c.name === (req.category || req.cat)) || LIFE_CATS[0];
     }
 
     function renderRequests() {
@@ -1662,7 +1662,7 @@
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <span class="flex items-center gap-2 text-[22px] font-black text-gray-900">
                 <span class="w-11 h-11 shrink-0 ${COLOR_ICON[m.color]} text-white rounded-xl flex items-center justify-center text-xl"><i class="fa-solid ${m.icon}"></i></span>
-                <span>${esc(r.category)}</span>
+                <span>${esc(r.category || r.cat || '기타 도움')}</span>
               </span>
               <div class="flex items-center gap-1.5">
                 ${kindBadge}
@@ -1670,7 +1670,7 @@
               </div>
             </div>
             <p class="text-lg font-bold text-gray-800">${isOffer && r.helperName ? `<i class="fa-solid fa-user text-emerald-700"></i> ${esc(r.helperName)} · ` : ''}<i class="fa-solid fa-location-dot"></i> ${esc(r.area || '동네 미입력')} · <i class="fa-regular fa-clock"></i> ${esc(fmtShort(r.createdAt))}${r.slot ? ' · ' + esc(r.slot) : ''}</p>
-            ${r.text ? `<p class="text-xl font-bold text-gray-900">${esc(r.text)}</p>` : ''}
+            ${(r.text || r.detail) ? `<p class="text-xl font-bold text-gray-900">${esc(r.text || r.detail || '')}</p>` : ''}
             ${isOffer && r.account ? (
               r.status === '기다리는 중'
                 ? `<p class="inline-block bg-amber-100 text-amber-900 border border-amber-400 text-sm font-black px-3 py-1 rounded-xl">💰 용돈 계좌 등록됨 (짝꿍 연결 시 공개)</p>`
@@ -2151,25 +2151,27 @@
       const detail = `[🏥 병원비 청구 도움] ${hosp || '병원'}${ins ? ' · ' + ins : ''}${claimPhotoData ? ' (서류 사진 첨부됨)' : ''}`;
       const item = {
         id: Date.now(),
-        type: 'need',
-        cat: '기타 도움',
+        tab: 'life',
+        kind: 'need',
+        category: '기타 도움',
         author,
-        timeSlot: '편한 시간',
-        detail,
+        time: timeStr,
+        text: detail,
         photo: claimPhotoData || '',
         status: '기다리는 중',
         createdAt: timeStr
       };
       if (typeof sbInsert === 'function') {
         await sbInsert('help', item);
-        if (typeof loadSharedHelp === 'function') await loadSharedHelp();
+        if (typeof syncAllFromSupabase === 'function') await syncAllFromSupabase();
       }
       claimPhotoData = '';
       if (document.getElementById('claimHospitalInput')) document.getElementById('claimHospitalInput').value = '';
       if (document.getElementById('claimInsurerInput')) document.getElementById('claimInsurerInput').value = '';
       if (document.getElementById('claimPhotoPreviewWrap')) document.getElementById('claimPhotoPreviewWrap').classList.add('hidden');
       closeClaimModal();
-      showToast('병원비 청구 도움 요청이 도우미에게 연결되었습니다! (실버당근 탭에서 확인 가능)', true);
+      if (typeof selectTab === 'function') selectTab(2);
+      showToast('병원비 청구 도움 요청이 올라갔습니다! 아래에서 확인해 보세요.', true);
     }
   </script>
 </body>
