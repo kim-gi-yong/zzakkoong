@@ -16,7 +16,7 @@
   </style>
 </head>
 <body class="bg-gray-100 flex justify-center min-h-screen">
-  <div class="w-full max-w-md bg-emerald-50/40 min-h-screen flex flex-col shadow-2xl relative pb-28">
+  <div class="w-full max-w-4xl bg-emerald-50/40 min-h-screen flex flex-col shadow-2xl relative pb-28">
 
     <!-- 상단 고정 헤더 -->
     <header class="bg-emerald-700 text-white py-3 px-4 flex items-center justify-between shadow sticky top-0 z-30">
@@ -306,7 +306,7 @@
 
     <!-- 하단 고정 탭바 -->
     <nav class="fixed bottom-0 left-0 right-0 z-30 flex justify-center pointer-events-none">
-      <div class="w-full max-w-md grid grid-cols-3 bg-white border-t-2 border-gray-300 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pointer-events-auto" style="height: 96px;">
+      <div class="w-full max-w-4xl grid grid-cols-3 bg-white border-t-2 border-gray-300 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] pointer-events-auto" style="height: 96px;">
         <button id="tabBtn1" onclick="selectTab(1)" class="flex flex-col items-center justify-center gap-1 font-black" aria-label="노노케어 도움매칭">
           <i class="fa-solid fa-handshake-angle" style="font-size: 32px;"></i>
           <span style="font-size: 20px;">도움매칭</span>
@@ -324,12 +324,12 @@
 
     <!-- 알림 토스트 -->
     <div id="toast" class="hidden fixed left-0 right-0 z-[60] flex justify-center px-4 pointer-events-none" style="bottom: 110px;">
-      <div id="toastText" class="max-w-md w-full bg-gray-950 text-white text-xl font-bold rounded-2xl px-5 py-4 shadow-2xl text-center"></div>
+      <div id="toastText" class="max-w-2xl w-full bg-gray-950 text-white text-xl font-bold rounded-2xl px-5 py-4 shadow-2xl text-center"></div>
     </div>
 
     <!-- 역할 선택 화면 -->
     <div id="roleScreen" class="hidden fixed inset-0 z-40 flex justify-center bg-gray-100">
-      <div class="w-full max-w-md bg-white min-h-screen flex flex-col justify-center p-6 space-y-6">
+      <div class="w-full max-w-4xl bg-white min-h-screen flex flex-col justify-center p-6 space-y-6">
         <div class="text-center space-y-2">
           <i class="fa-solid fa-hand-holding-hand text-6xl text-emerald-700"></i>
           <h2 class="text-[32px] font-black text-gray-900">짝꿍 2.0</h2>
@@ -604,6 +604,7 @@
       document.getElementById('aiText').innerText = reply;
       document.getElementById('aiChatBox').classList.remove('hidden');
       document.getElementById('voiceStatus').innerText = "마이크를 누르고 말씀해 보세요";
+      try { document.getElementById('aiChatBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
       speakText(reply);
     }
 
