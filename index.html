@@ -156,15 +156,28 @@
             </h2>
             <span class="bg-yellow-100 text-yellow-900 text-sm font-extrabold px-3 py-1 rounded-full">체험 시연용</span>
           </div>
-          <p class="text-xl text-gray-800">동네 짝꿍·친구 어르신들과 안부를 나눠요.</p>
-          <div id="neighborTalkList" class="bg-yellow-50/70 border-2 border-yellow-200 rounded-2xl p-3 space-y-2.5 max-h-64 overflow-y-auto"></div>
+          <p class="text-xl text-gray-800">동네 짝꿍·친구 어르신들과 안부와 나의 근황(자식·손주·일상 사진)을 나눠요.</p>
+          <div id="neighborTalkList" class="bg-yellow-50/70 border-2 border-yellow-200 rounded-2xl p-3 space-y-2.5 max-h-72 overflow-y-auto"></div>
           <div class="flex flex-wrap gap-2">
             <button onclick="sendQuickTalk('안녕하세요! 오늘도 건강하세요 😊')" class="bg-yellow-100 active:bg-yellow-200 border border-yellow-400 text-gray-900 font-bold text-base px-3.5 py-2 rounded-xl">👋 안녕하세요!</button>
             <button onclick="sendQuickTalk('오늘 산책 같이 가실 분 계신가요?')" class="bg-yellow-100 active:bg-yellow-200 border border-yellow-400 text-gray-900 font-bold text-base px-3.5 py-2 rounded-xl">🚶 산책 가실 분?</button>
             <button onclick="sendQuickTalk('식사 맛있게 드셨어요?')" class="bg-yellow-100 active:bg-yellow-200 border border-yellow-400 text-gray-900 font-bold text-base px-3.5 py-2 rounded-xl">🍚 식사하셨어요?</button>
+            <label class="bg-amber-200 active:bg-amber-300 border border-amber-500 text-gray-950 font-black text-base px-3.5 py-2 rounded-xl cursor-pointer">
+              📸 나의 근황 사진
+              <input type="file" accept="image/*" class="hidden" onchange="onNeighborPhoto(this)">
+            </label>
+          </div>
+          <div id="neighborPhotoPreviewBox" class="hidden flex items-center gap-3 bg-yellow-50 border-2 border-yellow-400 rounded-2xl p-2">
+            <img id="neighborPhotoPreview" alt="올릴 사진" class="w-16 h-16 object-cover rounded-xl border border-gray-300">
+            <span class="text-base font-bold text-gray-900 flex-1">근황 사진이 골라졌어요! 전송을 누르세요.</span>
+            <button onclick="clearNeighborPhoto()" class="tap bg-gray-200 text-gray-900 font-bold px-3 rounded-xl text-base">빼기</button>
           </div>
           <div class="flex gap-2">
-            <input id="neighborTalkInput" type="text" placeholder="동네 친구에게 톡 남기기" class="tap flex-1 min-w-0 border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-yellow-600" onkeydown="if(event.key === 'Enter') sendNeighborTalk()">
+            <label class="tap bg-gray-800 text-white font-black px-3.5 rounded-xl text-xl shrink-0 flex items-center justify-center gap-1.5 cursor-pointer" title="사진 올리기">
+              <i class="fa-solid fa-camera"></i><span class="hidden sm:inline text-lg">사진</span>
+              <input id="neighborPhotoInput" type="file" accept="image/*" class="hidden" onchange="onNeighborPhoto(this)">
+            </label>
+            <input id="neighborTalkInput" type="text" placeholder="나의 근황·안부 톡 남기기" class="tap flex-1 min-w-0 border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-yellow-600" onkeydown="if(event.key === 'Enter') sendNeighborTalk()">
             <button onclick="sendNeighborTalk()" class="tap bg-yellow-500 active:bg-yellow-600 text-gray-950 font-black px-5 rounded-xl text-xl shrink-0">전송</button>
           </div>
         </section>
@@ -891,14 +904,49 @@
         meta.textContent = `${m.who} · ${m.time}`;
         const bubble = document.createElement('div');
         bubble.className = m.mine
-          ? 'bg-yellow-300 text-gray-950 font-bold text-xl rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[88%] shadow-sm'
-          : 'bg-white border border-gray-300 text-gray-900 font-bold text-xl rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[88%] shadow-sm';
-        bubble.textContent = m.text;
+          ? 'bg-yellow-300 text-gray-950 font-bold text-xl rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[88%] shadow-sm space-y-1.5'
+          : 'bg-white border border-gray-300 text-gray-900 font-bold text-xl rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[88%] shadow-sm space-y-1.5';
+        if (m.photo) {
+          const img = document.createElement('img');
+          img.src = m.photo;
+          img.alt = '나의 근황 사진';
+          img.className = 'w-full max-h-56 object-cover rounded-xl border border-black/10';
+          bubble.appendChild(img);
+        }
+        if (m.text) {
+          const txt = document.createElement('p');
+          txt.textContent = m.text;
+          bubble.appendChild(txt);
+        }
         wrap.appendChild(meta);
         wrap.appendChild(bubble);
         box.appendChild(wrap);
       });
       box.scrollTop = box.scrollHeight;
+    }
+    let neighborPhoto = '';
+    async function onNeighborPhoto(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      try {
+        neighborPhoto = await readPhoto(file);
+        const prev = document.getElementById('neighborPhotoPreview');
+        const box = document.getElementById('neighborPhotoPreviewBox');
+        if (prev && box) {
+          prev.src = neighborPhoto;
+          box.classList.remove('hidden');
+        }
+      } catch (e) {
+        neighborPhoto = '';
+        showToast('사진을 읽지 못했어요. 다른 사진을 골라 주세요.', true);
+      }
+    }
+    function clearNeighborPhoto() {
+      neighborPhoto = '';
+      const inp = document.getElementById('neighborPhotoInput');
+      if (inp) inp.value = '';
+      const box = document.getElementById('neighborPhotoPreviewBox');
+      if (box) box.classList.add('hidden');
     }
     function formatNowTalkTime() {
       const d = new Date();
@@ -906,31 +954,39 @@
       const m = String(d.getMinutes()).padStart(2, '0');
       return `${h >= 12 ? '오후' : '오전'} ${h % 12 || 12}:${m}`;
     }
-    function appendNeighborTalk(text) {
+    function appendNeighborTalk(text, photo) {
       const trimmed = (text || '').trim();
-      if (!trimmed) return;
+      const pic = photo || '';
+      if (!trimmed && !pic) return;
       const list = getNeighborTalks();
-      list.push({ who: '나 (어르신)', mine: true, text: trimmed, time: formatNowTalkTime() });
-      try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(list.slice(-30))); } catch (e) {}
+      list.push({ who: '나 (어르신)', mine: true, text: trimmed, photo: pic, time: formatNowTalkTime() });
+      try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(list.slice(-20))); } catch (e) {
+        try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(list.slice(-5))); } catch (e2) {}
+      }
       renderNeighborTalk();
+
       setTimeout(() => {
         const cur = getNeighborTalks();
-        const replies = [
-          '반갑습니다 어르신! 오늘도 기분 좋은 하루 보내세요 😊',
-          '좋은 말씀 감사합니다! 이따 오후에 뵈어요~',
-          '네, 알겠습니다! 따뜻하게 챙겨 입으시고 건강하세요!'
-        ];
-        const reply = replies[cur.length % replies.length];
+        const reply = pic
+          ? '어머, 근황 사진 정말 보기 좋네요! 가족분들이 참 든든하시겠어요 😊'
+          : [
+              '반갑습니다 어르신! 오늘도 기분 좋은 하루 보내세요 😊',
+              '좋은 말씀 감사합니다! 이따 오후에 뵈어요~',
+              '네, 알겠습니다! 따뜻하게 챙겨 입으시고 건강하세요!'
+            ][cur.length % 3];
         cur.push({ who: '김영숙 님 (행복동)', mine: false, text: reply, time: formatNowTalkTime() });
-        try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(cur.slice(-30))); } catch (e) {}
+        try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(cur.slice(-20))); } catch (e) {}
         renderNeighborTalk();
       }, 900);
     }
     function sendNeighborTalk() {
       const inp = document.getElementById('neighborTalkInput');
-      if (!inp || !inp.value.trim()) return;
-      appendNeighborTalk(inp.value);
-      inp.value = '';
+      const txt = inp ? inp.value.trim() : '';
+      if (!txt && !neighborPhoto) { showToast('말씀이나 사진을 올려 주세요.', true); return; }
+      const pic = neighborPhoto;
+      if (inp) inp.value = '';
+      if (pic) clearNeighborPhoto();
+      appendNeighborTalk(txt, pic);
     }
     function sendQuickTalk(msg) { appendNeighborTalk(msg); }
 
