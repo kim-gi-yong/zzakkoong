@@ -31,6 +31,10 @@
         <h1 class="text-[28px] font-black tracking-tight">짝꿍 2.0</h1>
       </div>
       <div class="flex gap-2">
+        <button type="button" onclick="openFeedbackModal()" class="tap bg-rose-100 active:bg-rose-200 text-rose-950 text-base font-black px-2.5 rounded-2xl flex flex-col items-center justify-center leading-tight shadow">
+          <i class="fa-solid fa-bug text-lg"></i>
+          <span>불편접수</span>
+        </button>
         <button type="button" onclick="inviteByKakao()" class="tap bg-amber-300 active:bg-amber-400 text-gray-950 text-base font-black px-3 rounded-2xl flex flex-col items-center justify-center leading-tight shadow">
           <i class="fa-solid fa-comment text-lg"></i>
           <span>초대</span>
@@ -2293,6 +2297,61 @@
       } catch (e) {
         showToast('초대 주소: https://zzakkoong.vercel.app', true);
       }
+    }
+  </script>
+
+  <!-- 불편·건의 접수 모달 -->
+  <div id="feedbackModal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-5 space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-200 pb-3">
+        <h3 class="text-xl font-black text-gray-900">💬 불편·건의 접수</h3>
+        <button type="button" onclick="closeFeedbackModal()" class="text-2xl font-bold text-gray-500 px-2">✕</button>
+      </div>
+      <p class="text-sm font-semibold text-gray-700">쓰시면서 불편한 점이나 고쳤으면 하는 점을 적으시면 지니가 확인하고 바로 고쳐 드립니다.</p>
+      <select id="fbCategory" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-base font-bold bg-gray-50">
+        <option value="오류/안됨">⚠️ 안 되거나 오류가 나요</option>
+        <option value="화면/글씨">👀 화면이나 글씨가 불편해요</option>
+        <option value="기능 건의">💡 이런 기능이 있으면 좋겠어요</option>
+      </select>
+      <textarea id="fbText" rows="4" placeholder="불편한 점을 편하게 적어 주세요 (예: 버튼이 작아요, 어떤 화면이 안 열려요)" class="w-full px-3.5 py-3 rounded-xl border border-gray-300 text-base font-semibold"></textarea>
+      <button type="button" onclick="submitFeedback()" class="w-full bg-rose-600 active:bg-rose-700 text-white text-lg font-black py-3.5 rounded-xl shadow">
+        📩 지니에게 바로 접수하기
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function openFeedbackModal() {
+      const m = document.getElementById('feedbackModal');
+      if (m) m.classList.remove('hidden');
+    }
+    function closeFeedbackModal() {
+      const m = document.getElementById('feedbackModal');
+      if (m) m.classList.add('hidden');
+    }
+    async function submitFeedback() {
+      const category = document.getElementById('fbCategory')?.value || '불편사항';
+      const text = (document.getElementById('fbText')?.value || '').trim();
+      if (!text) {
+        showToast('불편한 점이나 건의 내용을 적어 주세요.', false);
+        return;
+      }
+      const author = localStorage.getItem('zzakkoong_kakao_name') || localStorage.getItem('zzakkoong_talk_name') || '김기용';
+      const now = new Date();
+      const createdAt = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      if (typeof sbInsert === 'function') {
+        await sbInsert('feedback', { author, category, text, createdAt });
+      }
+      try {
+        await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ author, category, text })
+        });
+      } catch {}
+      document.getElementById('fbText').value = '';
+      closeFeedbackModal();
+      showToast('불편·건의 사항이 접수되었습니다! 지니가 확인하고 바로 고칠게요.', true);
     }
   </script>
 </body>
