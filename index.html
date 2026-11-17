@@ -49,11 +49,16 @@
 
           <!-- 내 건강 기록표 (실제 입력·저장) -->
           <div class="space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-gray-200 gap-2">
+            <div class="flex flex-wrap items-center justify-between pb-2 border-b border-gray-200 gap-2">
               <span class="text-xl font-black text-gray-900">❤️ 내 건강 기록표</span>
-              <button type="button" onclick="openHealthModal()" class="bg-emerald-600 active:bg-emerald-700 text-white text-base font-extrabold px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-1.5">
-                <i class="fa-solid fa-pen-to-square"></i> 오늘 기록하기
-              </button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="bleHrBtn" onclick="connectHeartBand()" class="bg-rose-600 active:bg-rose-700 text-white text-sm font-extrabold px-3 py-2 rounded-xl shadow-sm flex items-center gap-1">
+                  <i class="fa-brands fa-bluetooth-b"></i> <span id="bleHrLabel">심박 밴드</span>
+                </button>
+                <button type="button" onclick="openHealthModal()" class="bg-emerald-600 active:bg-emerald-700 text-white text-sm font-extrabold px-3 py-2 rounded-xl shadow-sm flex items-center gap-1">
+                  <i class="fa-solid fa-pen-to-square"></i> 오늘 기록하기
+                </button>
+              </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div class="tap bg-rose-50 border-2 border-rose-300 rounded-2xl p-3 text-center cursor-pointer" onclick="openHealthModal()">
@@ -645,6 +650,43 @@
       document.getElementById('userText').innerText = trimmed;
       document.getElementById('userChatBox').classList.remove('hidden');
       document.getElementById('voiceStatus').innerText = "생각 중...";
+
+      // 말로 건강 수치 기록하기 (예: "혈압 120에 80 심박 72 걸음 4500보 아침약 먹었어")
+      const bpMatch = text.match(/혈압\s*(\d{2,3})\s*(?:에|\/|\s)\s*(\d{2,3})/);
+      const hrMatch = text.match(/(?:심박|심박수|맥박)\s*(\d{2,3})/);
+      const stepMatch = text.match(/(\d[\d,]*)\s*(?:보|걸음)/);
+      const sugarMatch = text.match(/혈당\s*(\d{2,3})/);
+      const hasMedSpeak = /(?:아침약|점심약|저녁약|약\s*먹)/.test(text);
+      if (bpMatch || hrMatch || stepMatch || sugarMatch || hasMedSpeak) {
+        const meds = [];
+        if (text.includes('아침약') || (hasMedSpeak && text.includes('아침'))) meds.push('아침');
+        if (text.includes('점심약') || (hasMedSpeak && text.includes('점심'))) meds.push('점심');
+        if (text.includes('저녁약') || (hasMedSpeak && text.includes('저녁'))) meds.push('저녁');
+        if (hasMedSpeak && !meds.length) meds.push('복용');
+        const now = new Date();
+        const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        const entry = {
+          id: Date.now(),
+          date: dateStr,
+          bpSys: bpMatch ? bpMatch[1] : '',
+          bpDia: bpMatch ? bpMatch[2] : '',
+          hr: hrMatch ? hrMatch[1] : '',
+          steps: stepMatch ? stepMatch[1].replace(/,/g, '') : '',
+          sugar: sugarMatch ? sugarMatch[1] : '',
+          meds
+        };
+        const logs = [entry, ...getHealthLogs()].slice(0, 30);
+        localStorage.setItem('zzakkoong_health_logs', JSON.stringify(logs));
+        renderHealthCard();
+        const savedParts = [];
+        if (entry.bpSys) savedParts.push(`혈압 ${entry.bpSys}/${entry.bpDia}`);
+        if (entry.hr) savedParts.push(`심박 ${entry.hr}회/분`);
+        if (entry.steps) savedParts.push(`걸음 ${Number(entry.steps).toLocaleString()}보`);
+        if (entry.sugar) savedParts.push(`혈당 ${entry.sugar}`);
+        if (entry.meds.length) savedParts.push(`약(${entry.meds.join('·')})`);
+        showReply(`말씀하신 ${savedParts.join(', ')} — 건강 기록표에 바로 저장해 두었어요!`);
+        return;
+      }
 
       // 실제 저장된 건강 기록 기반 응답
       if (lower.includes('건강') || lower.includes('심박') || lower.includes('혈압') || lower.includes('걸음') || lower.includes('몸상태')) {
@@ -1949,6 +1991,54 @@
               <td class="py-1.5 text-right"><button onclick="deleteHealthLog(${l.id})" class="text-xs text-red-600 font-bold">삭제</button></td>
             </tr>`).join('')}</tbody>
           </table>`;
+        }
+      }
+    }
+
+    let bleHeartDevice = null, bleLastSaveAt = 0;
+    async function connectHeartBand() {
+      if (!navigator.bluetooth) {
+        showToast('안드로이드 크롬이나 PC 크롬에서 블루투스 심박 밴드 연결이 가능해요.', false);
+        return;
+      }
+      const btnLbl = document.getElementById('bleHrLabel');
+      try {
+        if (btnLbl) btnLbl.innerText = '찾는 중...';
+        bleHeartDevice = await navigator.bluetooth.requestDevice({
+          filters: [{ services: ['heart_rate'] }]
+        });
+        const server = await bleHeartDevice.gatt.connect();
+        const service = await server.getPrimaryService('heart_rate');
+        const char = await service.getCharacteristic('heart_rate_measurement');
+        await char.startNotifications();
+        if (btnLbl) btnLbl.innerText = '연결됨';
+        showToast(`${bleHeartDevice.name || '심박 밴드'}와 실시간 연결되었습니다!`, true);
+        char.addEventListener('characteristicvaluechanged', (e) => {
+          const val = e.target.value;
+          const flags = val.getUint8(0);
+          const bpm = (flags & 0x01) ? val.getUint16(1, true) : val.getUint8(1);
+          const hrEl = document.getElementById('healthHrVal');
+          if (hrEl) hrEl.innerText = `${bpm} 회/분 (실시간)`;
+          const nowTs = Date.now();
+          if (nowTs - bleLastSaveAt > 60000) {
+            bleLastSaveAt = nowTs;
+            const now = new Date();
+            const dateStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const logs = [{ id: nowTs, date: dateStr, bpSys: '', bpDia: '', hr: String(bpm), steps: '', sugar: '', meds: [] }, ...getHealthLogs()].slice(0, 30);
+            localStorage.setItem('zzakkoong_health_logs', JSON.stringify(logs));
+            renderHealthCard();
+          }
+        });
+        bleHeartDevice.addEventListener('gattserverdisconnected', () => {
+          if (btnLbl) btnLbl.innerText = '심박 밴드';
+          showToast('심박 밴드 연결이 끊어졌어요.', false);
+        });
+      } catch (err) {
+        if (btnLbl) btnLbl.innerText = '심박 밴드';
+        if (err && err.name === 'NotFoundError') {
+          showToast('연결이 취소되었거나 표준 BLE 심박계(Heart Rate) 기기가 주변에 없어요.', false);
+        } else {
+          showToast('블루투스 연결을 확인해 주세요.', false);
         }
       }
     }
