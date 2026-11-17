@@ -14,6 +14,7 @@
     .chip-on { outline: 4px solid #047857; outline-offset: 2px; }
     button:disabled { opacity: .55; }
   </style>
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" crossorigin="anonymous"></script>
 </head>
 <body class="bg-gray-100 flex justify-center min-h-screen">
   <div class="w-full max-w-4xl bg-emerald-50/40 min-h-screen flex flex-col shadow-2xl relative pb-28">
@@ -836,6 +837,17 @@
         return;
       }
       const redirectUri = window.location.origin + '/api/kakao-callback';
+      if (window.Kakao) {
+        if (!window.Kakao.isInitialized()) {
+          window.Kakao.init('ef1424c8b8833ead777d0612ae59694e');
+        }
+        showToast('카카오톡 앱으로 바로 연결합니다...', true);
+        window.Kakao.Auth.authorize({
+          redirectUri: redirectUri,
+          scope: 'profile_nickname'
+        });
+        return;
+      }
       const authUrl = `https://kauth.kakao.com/oauth/authorize?client_id=3fd063a11398b5d3713614debec0dd6c&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=profile_nickname`;
       showToast('카카오톡 안전 로그인으로 이동합니다...', true);
       window.location.href = authUrl;
