@@ -422,6 +422,17 @@
             <i class="fa-solid fa-comment text-2xl"></i> <span id="kakaoBtnText">카카오톡으로 3초 신원확인</span>
           </button>
           <p id="kakaoStatusText" class="text-sm font-bold text-gray-700">서로 안심하고 돕기 위해 카카오로 신원을 확인해요 (체험 시 아래 역할 바로 선택 가능)</p>
+          <div class="mt-2.5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[12px] text-slate-600 bg-white/80 border border-yellow-300 rounded-xl px-3 py-2">
+            <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+              <input id="termsAgreeCheck" type="checkbox" checked class="w-4 h-4 accent-emerald-600 rounded" />
+              <span>이용약관·개인정보 처리방침 동의</span>
+            </label>
+            <div class="flex items-center gap-2 text-[11px] font-bold">
+              <button type="button" onclick="openPolicyModal('terms')" class="underline text-emerald-700">이용약관 보기</button>
+              <span class="text-slate-300">|</span>
+              <button type="button" onclick="openPolicyModal('privacy')" class="underline text-emerald-700">개인정보 처리방침</button>
+            </div>
+          </div>
         </div>
         <button onclick="chooseRole('receiver')" class="w-full min-h-[120px] bg-rose-600 active:bg-rose-700 text-white rounded-3xl flex items-center justify-center gap-4 shadow-lg">
           <i class="fa-solid fa-house-user text-5xl"></i>
@@ -797,19 +808,56 @@
     }
 
     async function loginWithKakao() {
-      const name = prompt('안심 신원확인을 위해 성함을 적어 주세요. (예: 김기용)', myNick() === '어르신' ? '' : myNick());
-      if (!name || !name.trim()) return;
-      const last4 = prompt('연락처 뒤 4자리를 적어 주세요. (예: 3158)', '');
-      if (last4 === null) return;
-      const cleanName = name.trim();
-      localStorage.setItem('zzakkoong_nick', cleanName);
-      localStorage.setItem('zzakkoong_kakao_verified', '1');
-      renderMyNick();
-      const bt = document.getElementById('kakaoBtnText');
-      const st = document.getElementById('kakaoStatusText');
-      if (bt) bt.innerText = `✅ ${cleanName} 님 안심 신원확인 완료`;
-      if (st) st.innerText = '신원 확인이 완료되었습니다! 아래 역할을 골라 바로 시작하세요.';
-      showToast(`${cleanName} 님, 안심 신원확인 완료!`, true);
+      const agree = document.getElementById('termsAgreeCheck');
+      if (agree && !agree.checked) {
+        showToast('이용약관과 개인정보 처리방침에 먼저 동의해 주세요.', false);
+        return;
+      }
+      const redirectTo = window.location.origin + window.location.pathname;
+      const authUrl = `${SB_URL}/auth/v1/authorize?provider=kakao&scopes=profile_nickname&redirect_to=${encodeURIComponent(redirectTo)}`;
+      showToast('카카오톡 안전 로그인으로 이동합니다...', true);
+      window.location.href = authUrl;
+    }
+
+    function openPolicyModal(kind) {
+      const m = document.getElementById('policyModal');
+      const t = document.getElementById('policyModalTitle');
+      const b = document.getElementById('policyModalBody');
+      if (!m || !t || !b) return;
+      if (kind === 'terms') {
+        t.innerText = '📜 짝꿍 2.0 서비스 이용약관';
+        b.innerHTML = `
+          <p class="font-bold text-slate-800 mb-2">제1조 (목적 및 운영자)</p>
+          <p class="mb-3">본 서비스 '짝꿍 2.0'(운영: 씨티지피369 / 대표: 김기용)은 어르신과 이웃이 안부를 나누고 생활 도움을 주고받는 안심 돌봄 플랫폼입니다.</p>
+          <p class="font-bold text-slate-800 mb-2">제2조 (이용자 신원 및 안전)</p>
+          <p class="mb-3">이용자는 카카오 계정으로 본인 신원을 확인한 뒤 참여하며, 타인 사칭·허위 게시물·불법 영업이나 과도한 금전 요구는 즉시 이용 제한될 수 있습니다.</p>
+          <p class="font-bold text-slate-800 mb-2">제3조 (감사의 용돈 및 면책)</p>
+          <p class="mb-3">도우미에게 전하는 감사의 용돈 계좌는 양측이 서로 돕기에 합의(매칭)된 이후에만 공개되며, 당사자 간 직접 정산 시 사기·선입금 요구에 각별히 주의해 주세요.</p>
+          <p class="font-bold text-slate-800 mb-2">제4조 (문의처)</p>
+          <p>운영: 씨티지피369 · 문의: giyonggim368@gmail.com</p>
+        `;
+      } else {
+        t.innerText = '🔒 개인정보 처리방침 및 통신비밀 보호';
+        b.innerHTML = `
+          <p class="font-bold text-slate-800 mb-2">1. 수집하는 최소 항목</p>
+          <p class="mb-3">카카오 로그인 시 <strong>닉네임(식별 번호 포함)</strong>만 수집하며, 비밀번호·주민등록번호 등 민감정보는 절대 수집하거나 저장하지 않습니다.</p>
+          <p class="font-bold text-slate-800 mb-2">2. 이용 목적 및 보관</p>
+          <p class="mb-3">수집된 정보는 동네 톡방·서로돕기 매칭·두뇌 사랑방 이용자 식별에만 쓰며, 이용자가 원할 경우 언제든 삭제 및 탈퇴를 요청할 수 있습니다.</p>
+          <p class="font-bold text-slate-800 mb-2">3. 제3자 제공 금지 및 통신 보호</p>
+          <p class="mb-3">이용자 동의 없이 외부에 개인정보를 판매·제공하지 않으며, 모든 통신은 암호화(HTTPS)로 보호됩니다. 도우미 계좌번호 역시 매칭 완료 전에는 노출되지 않습니다.</p>
+          <p class="font-bold text-slate-800 mb-2">4. 개인정보 보호책임자</p>
+          <p>씨티지피369 대표 김기용 (giyonggim368@gmail.com)</p>
+        `;
+      }
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closePolicyModal() {
+      const m = document.getElementById('policyModal');
+      if (!m) return;
+      m.classList.add('hidden');
+      m.classList.remove('flex');
     }
 
     function checkKakaoReturn() {
@@ -1704,5 +1752,18 @@
     syncAllFromSupabase();
     setInterval(syncAllFromSupabase, 4000);
   </script>
+  <!-- 이용약관 / 개인정보 처리방침 모달 -->
+  <div id="policyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" onclick="if(event.target===this) closePolicyModal()">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-5 py-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between">
+        <h3 id="policyModalTitle" class="text-lg font-extrabold text-emerald-950"></h3>
+        <button type="button" onclick="closePolicyModal()" class="w-9 h-9 rounded-full bg-white text-slate-700 font-extrabold text-lg border border-slate-200">✕</button>
+      </div>
+      <div id="policyModalBody" class="p-5 text-[14px] leading-relaxed text-slate-700 max-h-[65vh] overflow-y-auto"></div>
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button type="button" onclick="closePolicyModal()" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-extrabold text-sm">확인했어요</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
