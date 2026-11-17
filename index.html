@@ -154,7 +154,10 @@
             <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
               <i class="fa-solid fa-comments text-yellow-600"></i> 어르신 동네 톡방
             </h2>
-            <span class="bg-yellow-100 text-yellow-900 text-sm font-extrabold px-3 py-1 rounded-full">체험 시연용</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="changeMyNick()" class="bg-gray-100 active:bg-gray-200 border border-gray-400 text-gray-900 text-sm font-extrabold px-3 py-1 rounded-full">👤 <span id="myNickLabel">나 (어르신)</span></button>
+              <span class="bg-emerald-100 text-emerald-900 border border-emerald-400 text-sm font-extrabold px-3 py-1 rounded-full">● 실시간 공용</span>
+            </div>
           </div>
           <p class="text-xl text-gray-800">동네 짝꿍·친구 어르신들과 안부와 나의 근황(자식·손주·일상 사진)을 나눠요.</p>
           <div id="neighborTalkList" class="bg-yellow-50/70 border-2 border-yellow-200 rounded-2xl p-3 space-y-2.5 max-h-72 overflow-y-auto"></div>
@@ -358,6 +361,18 @@
             <i class="fa-solid fa-gamepad text-rose-600"></i> 사랑방 게임
           </h2>
           <div id="gameCards" class="space-y-3"></div>
+        </section>
+
+        <section class="bg-white rounded-3xl p-4 border-2 border-indigo-400 shadow-sm space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <h2 class="text-[24px] font-black text-gray-900 flex items-center gap-2">
+              <i class="fa-solid fa-users text-indigo-700"></i> 동네 어르신 게임방
+            </h2>
+            <span class="bg-emerald-100 text-emerald-900 border border-emerald-400 text-sm font-extrabold px-3 py-1 rounded-full">● 실시간</span>
+          </div>
+          <p class="text-lg font-bold text-gray-800">이웃이 지금 어떤 게임을 하는지 보고, 같이 한 판 도전해 보세요!</p>
+          <button onclick="inviteGame()" class="tap w-full bg-indigo-600 active:bg-indigo-700 text-white text-xl font-black rounded-2xl shadow">🙋 나도 지금 게임할 분 찾아요!</button>
+          <div id="sharedGameFeed" class="space-y-2 max-h-60 overflow-y-auto"></div>
         </section>
       </div>
     </main>
@@ -747,6 +762,98 @@
     /* =====================================================
        짝꿍 2.0 공통 도우미
        ===================================================== */
+
+    /* ---- Supabase 공용 실시간 서버 (0원 무료 플랜) ---- */
+    const SB_URL = 'https://udqjidgukmmzkpspoahf.supabase.co';
+    const SB_KEY = 'sb_publishable_vHoZA5cS5M0iNIRetjS6lA_UYWWio6A';
+    const SB_HEADERS = {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json'
+    };
+
+    function myNick() {
+      return (localStorage.getItem('zzakkoong_nick') || '').trim() || '어르신';
+    }
+    function renderMyNick() {
+      const el = document.getElementById('myNickLabel');
+      if (el) el.innerText = myNick();
+    }
+    function changeMyNick() {
+      const v = prompt('동네 톡방과 게임에 보일 내 이름을 적어 주세요. (예: 김기용)', myNick());
+      if (v === null) return;
+      localStorage.setItem('zzakkoong_nick', v.trim() || '어르신');
+      renderMyNick();
+    }
+
+    async function sbFetchRoom(room) {
+      try {
+        const r = await fetch(`${SB_URL}/rest/v1/zzakkoong_items?room=eq.${room}&order=id.asc&limit=50`, {
+          headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+        });
+        if (!r.ok) return null;
+        return await r.json();
+      } catch { return null; }
+    }
+
+    async function sbInsert(room, payload) {
+      try {
+        const r = await fetch(`${SB_URL}/rest/v1/zzakkoong_items`, {
+          method: 'POST',
+          headers: { ...SB_HEADERS, 'Prefer': 'return=representation' },
+          body: JSON.stringify({ room, payload })
+        });
+        if (!r.ok) return null;
+        const rows = await r.json();
+        return rows && rows[0] ? rows[0] : null;
+      } catch { return null; }
+    }
+
+    async function sbUpdate(dbId, payload) {
+      if (!dbId) return;
+      try {
+        await fetch(`${SB_URL}/rest/v1/zzakkoong_items?id=eq.${dbId}`, {
+          method: 'PATCH',
+          headers: SB_HEADERS,
+          body: JSON.stringify({ payload })
+        });
+      } catch {}
+    }
+
+    async function sbDelete(dbId) {
+      if (!dbId) return;
+      try {
+        await fetch(`${SB_URL}/rest/v1/zzakkoong_items?id=eq.${dbId}`, {
+          method: 'DELETE',
+          headers: SB_HEADERS
+        });
+      } catch {}
+    }
+
+    let sharedTalks = null;
+    let sharedHelps = null;
+    let sharedGames = [];
+
+    async function syncAllFromSupabase() {
+      const [talks, helps, scores] = await Promise.all([
+        sbFetchRoom('talk'),
+        sbFetchRoom('help'),
+        sbFetchRoom('score')
+      ]);
+      if (Array.isArray(talks)) {
+        sharedTalks = talks.map(row => ({ ...(row.payload || {}), dbId: row.id }));
+        renderNeighborTalk();
+      }
+      if (Array.isArray(helps)) {
+        sharedHelps = helps.map(row => ({ ...(row.payload || {}), dbId: row.id }));
+        renderRequests();
+      }
+      if (Array.isArray(scores)) {
+        sharedGames = scores.map(row => ({ ...(row.payload || {}), dbId: row.id, createdAt: row.created_at })).reverse();
+        renderSharedGameFeed();
+      }
+    }
+
     function lsGet(key, fallback) {
       try { const v = localStorage.getItem(key); return v === null ? fallback : JSON.parse(v); }
       catch (e) { return fallback; }
@@ -888,6 +995,7 @@
       { who: '박철수 님 (행복동)', mine: false, text: '네, 고맙습니다! 오후에 경로당 앞에서 잠깐 산책하실 분 계신가요?', time: '오전 9:14' }
     ];
     function getNeighborTalks() {
+      if (Array.isArray(sharedTalks) && sharedTalks.length) return sharedTalks;
       const saved = lsGet(NEIGHBOR_TALK_KEY, null);
       return Array.isArray(saved) && saved.length ? saved : DEFAULT_NEIGHBOR_TALKS.slice();
     }
@@ -897,13 +1005,14 @@
       const list = getNeighborTalks();
       box.innerHTML = '';
       list.forEach((m) => {
+        const isMine = !!(m.mine || (m.sender && m.sender === myNick() && m.who && m.who.startsWith(myNick())));
         const wrap = document.createElement('div');
-        wrap.className = m.mine ? 'flex flex-col items-end' : 'flex flex-col items-start';
+        wrap.className = isMine ? 'flex flex-col items-end' : 'flex flex-col items-start';
         const meta = document.createElement('span');
         meta.className = 'text-sm font-bold text-gray-700 mb-0.5';
         meta.textContent = `${m.who} · ${m.time}`;
         const bubble = document.createElement('div');
-        bubble.className = m.mine
+        bubble.className = isMine
           ? 'bg-yellow-300 text-gray-950 font-bold text-xl rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-[88%] shadow-sm space-y-1.5'
           : 'bg-white border border-gray-300 text-gray-900 font-bold text-xl rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-[88%] shadow-sm space-y-1.5';
         if (m.photo) {
@@ -954,16 +1063,20 @@
       const m = String(d.getMinutes()).padStart(2, '0');
       return `${h >= 12 ? '오후' : '오전'} ${h % 12 || 12}:${m}`;
     }
-    function appendNeighborTalk(text, photo) {
+    async function appendNeighborTalk(text, photo) {
       const trimmed = (text || '').trim();
       const pic = photo || '';
       if (!trimmed && !pic) return;
+      const nick = myNick();
+      const area = myArea();
+      const whoLabel = area ? `${nick} (${area})` : nick;
+      const entry = { who: whoLabel, sender: nick, text: trimmed, photo: pic, time: formatNowTalkTime() };
       const list = getNeighborTalks();
-      list.push({ who: '나 (어르신)', mine: true, text: trimmed, photo: pic, time: formatNowTalkTime() });
-      try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(list.slice(-20))); } catch (e) {
-        try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(list.slice(-5))); } catch (e2) {}
-      }
+      list.push({ ...entry, mine: true });
+      if (Array.isArray(sharedTalks)) sharedTalks = list;
+      try { localStorage.setItem(NEIGHBOR_TALK_KEY, JSON.stringify(list.slice(-20))); } catch (e) {}
       renderNeighborTalk();
+      sbInsert('talk', entry).then(() => syncAllFromSupabase());
 
       setTimeout(() => {
         const cur = getNeighborTalks();
@@ -1184,6 +1297,7 @@
       const list = lsGet('zzakkoong_requests', []);
       list.push(req);
       saveRequestsSafe(list);
+      sbInsert('help', req).then(() => syncAllFromSupabase());
       const cat = offerCat;
       closeLifeOffer();
       renderRequests();
@@ -1270,6 +1384,7 @@
       const list = lsGet('zzakkoong_requests', []);
       list.push(req);
       saveRequestsSafe(list);
+      sbInsert('help', req).then(() => syncAllFromSupabase());
       const cat = lifeCat;
       closeLifeRequest();
       renderRequests();
@@ -1283,7 +1398,8 @@
     }
 
     function renderRequests() {
-      let list = lsGet('zzakkoong_requests', []).slice().reverse();
+      const baseList = Array.isArray(sharedHelps) ? sharedHelps : lsGet('zzakkoong_requests', []);
+      let list = baseList.slice().reverse();
       if (listFilter === 'ask') list = list.filter(r => r.kind !== 'offer');
       if (listFilter === 'offer') list = list.filter(r => r.kind === 'offer');
       const box = document.getElementById('requestList');
@@ -1331,11 +1447,14 @@
     }
 
     function connectMatch(id, isOffer) {
-      const list = lsGet('zzakkoong_requests', []);
-      const r = list.find(x => x.id === id);
+      const src = Array.isArray(sharedHelps) ? sharedHelps : lsGet('zzakkoong_requests', []);
+      const r = src.find(x => x.id === id);
       if (!r) return;
       r.status = '짝꿍 찾음';
-      saveRequestsSafe(list);
+      if (r.dbId) sbUpdate(r.dbId, { ...r, status: '짝꿍 찾음' }).then(() => syncAllFromSupabase());
+      const local = lsGet('zzakkoong_requests', []);
+      const lr = local.find(x => x.id === id);
+      if (lr) { lr.status = '짝꿍 찾음'; saveRequestsSafe(local); }
       renderRequests();
       const msg = isOffer
         ? `${r.helperName || '이웃'} 님께 도움 부탁이 연결되었어요!`
@@ -1345,17 +1464,24 @@
     }
 
     function setRequestStatus(id, status) {
-      const list = lsGet('zzakkoong_requests', []);
-      const r = list.find(x => x.id === id);
+      const src = Array.isArray(sharedHelps) ? sharedHelps : lsGet('zzakkoong_requests', []);
+      const r = src.find(x => x.id === id);
       if (!r) return;
       r.status = status;
-      saveRequestsSafe(list);
+      if (r.dbId) sbUpdate(r.dbId, { ...r, status }).then(() => syncAllFromSupabase());
+      const local = lsGet('zzakkoong_requests', []);
+      const lr = local.find(x => x.id === id);
+      if (lr) { lr.status = status; saveRequestsSafe(local); }
       renderRequests();
       showToast(`'${status}'(으)로 바꿨어요.`, true);
     }
 
     function deleteRequest(id) {
-      if (!confirm('이 요청을 지울까요?')) return;
+      if (!confirm('이 글을 지울까요?')) return;
+      const src = Array.isArray(sharedHelps) ? sharedHelps : lsGet('zzakkoong_requests', []);
+      const r = src.find(x => x.id === id);
+      if (r && r.dbId) sbDelete(r.dbId).then(() => syncAllFromSupabase());
+      if (Array.isArray(sharedHelps)) sharedHelps = sharedHelps.filter(x => x.id !== id);
       saveRequestsSafe(lsGet('zzakkoong_requests', []).filter(x => x.id !== id));
       renderRequests();
     }
@@ -1396,6 +1522,7 @@
       const plays = lsGet('zzakkoong_plays', []);
       plays.push({ at: new Date().toISOString(), game: g.name });
       lsSet('zzakkoong_plays', plays.slice(-500));
+      sbInsert('score', { player: myNick(), area: myArea(), game: g.name, msg: `${g.name} 한 판 시작했어요!`, time: formatNowTalkTime() });
       touchLastSeen();
       if (g.newWin) { window.open(g.url, '_blank', 'noopener'); renderBrainScore(); }
       else { location.href = g.url; }
@@ -1436,7 +1563,39 @@
     /* =====================================================
        시작
        ===================================================== */
+    function inviteGame() {
+      const nick = myNick();
+      const area = myArea();
+      sbInsert('score', {
+        player: nick, area, game: '함께하기',
+        msg: '지금 두뇌 게임 같이 하실 분 계신가요? 🙋',
+        time: formatNowTalkTime()
+      }).then(() => {
+        syncAllFromSupabase();
+        showToast('동네 어르신 게임방에 초대 글을 올렸어요!', true);
+      });
+    }
+
+    function renderSharedGameFeed() {
+      const box = document.getElementById('sharedGameFeed');
+      if (!box) return;
+      if (!sharedGames.length) {
+        box.innerHTML = '<p class="text-lg font-bold text-gray-600 text-center py-3">아직 올라온 게임 소식이 없어요. 위 게임이나 초대 버튼을 눌러 보세요!</p>';
+        return;
+      }
+      box.innerHTML = sharedGames.slice(0, 15).map(g => `
+        <div class="bg-indigo-50 border border-indigo-200 rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2">
+          <div>
+            <p class="text-base font-black text-indigo-900">${esc(g.player || '어르신')}${g.area ? ' (' + esc(g.area) + ')' : ''} · ${esc(g.time || '')}</p>
+            <p class="text-lg font-bold text-gray-900">${esc(g.msg || g.game)}</p>
+          </div>
+          <span class="bg-white border border-indigo-300 text-indigo-800 text-sm font-black px-2.5 py-1 rounded-xl shrink-0">${esc(g.game)}</span>
+        </div>
+      `).join('');
+    }
+
     function initApp() {
+      renderMyNick();
       recordVisit();
       renderCareChoices();
       renderMatch();
@@ -1454,6 +1613,8 @@
     }
     document.addEventListener('visibilitychange', () => { if (!document.hidden) touchLastSeen(); });
     initApp();
+    syncAllFromSupabase();
+    setInterval(syncAllFromSupabase, 4000);
   </script>
 </body>
 </html>
