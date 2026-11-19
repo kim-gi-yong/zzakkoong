@@ -217,6 +217,20 @@
           </div>
         </section>
 
+        <!-- 카카오 택시 호출 (도움필요 화면) -->
+        <button onclick="openKakaoTaxi()" class="tap w-full bg-amber-400 hover:bg-amber-500 active:scale-[0.98] text-gray-950 font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition border-2 border-amber-500">
+          <div class="flex items-center gap-3">
+            <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-3xl text-amber-700 shadow-sm">
+              <i class="fa-solid fa-taxi"></i>
+            </div>
+            <div class="text-left">
+              <span class="text-xl font-black block">카카오 택시 호출</span>
+              <span class="text-base font-bold text-gray-900">진짜 카카오T 앱 켜기</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xl text-gray-900"></i>
+        </button>
+
         <!-- (다-2) 내 담당 도우미 (맨 아래 배치) -->
         <section class="bg-white rounded-3xl p-4 border-2 border-sky-500 shadow-sm space-y-3">
           <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
@@ -350,19 +364,6 @@
             <div id="lifeCatCards" class="grid grid-cols-2 gap-3"></div>
           </section>
 
-          <!-- 카카오 택시 (기존 기능 유지) -->
-          <button onclick="openKakaoTaxi()" class="tap w-full bg-amber-400 hover:bg-amber-500 active:scale-[0.98] text-gray-950 font-black rounded-2xl p-3.5 flex items-center justify-between shadow transition border-2 border-amber-500">
-            <div class="flex items-center gap-3">
-              <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-3xl text-amber-700 shadow-sm">
-                <i class="fa-solid fa-taxi"></i>
-              </div>
-              <div class="text-left">
-                <span class="text-xl font-black block">카카오 택시 호출</span>
-                <span class="text-base font-bold text-gray-900">진짜 카카오T 앱 켜기</span>
-              </div>
-            </div>
-            <i class="fa-solid fa-chevron-right text-xl text-gray-900"></i>
-          </button>
         </div>
 
         <!-- 우리 동네 도움 목록 -->
