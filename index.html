@@ -671,6 +671,7 @@
     async function processUserInput(query) {
       if (!query || query.trim() === '') return;
       const trimmed = query.trim();
+      const text = trimmed;
       const lower = trimmed.toLowerCase();
 
       document.getElementById('userText').innerText = trimmed;
