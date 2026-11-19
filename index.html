@@ -1185,7 +1185,10 @@
       applyRole();
       selectTab(role === 'giver' ? 2 : 1);
       const p = myProfile();
-      if (!p.name || !p.phone || !p.area) {
+      const needsInfo = role === 'receiver'
+        ? (!p.name || !p.phone || !p.area || !p.detailAddr)
+        : (!p.name || !p.phone || !p.area);
+      if (needsInfo) {
         openProfileModal(role);
       } else {
         showToast(role === 'giver' ? '고맙습니다! 도움이 필요한 이웃을 먼저 보여드릴게요.' : '언제든 편하게 도움을 요청하세요.', true);
