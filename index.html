@@ -158,38 +158,6 @@
           </div>
         </section>
 
-        <!-- (나) 오늘의 짝꿍 -->
-        <section class="bg-white rounded-3xl p-4 border-2 border-sky-500 shadow-sm space-y-3">
-          <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
-            <i class="fa-solid fa-user-group text-sky-700"></i> 오늘의 짝꿍
-          </h2>
-          <p class="text-xl text-gray-800">늘 곁에서 챙겨 주는 내 짝꿍이에요.</p>
-          <div id="matchView" class="space-y-3 hidden">
-            <div class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-4 space-y-1">
-              <p class="text-2xl font-black text-gray-900"><i class="fa-solid fa-user text-sky-700"></i> <span id="matchName"></span></p>
-              <p class="text-xl font-bold text-gray-800"><i class="fa-solid fa-location-dot text-sky-700"></i> <span id="matchArea"></span></p>
-              <p class="text-xl font-bold text-gray-800"><i class="fa-solid fa-phone text-sky-700"></i> <span id="matchPhone"></span></p>
-              <p id="matchLastVisit" class="text-lg font-bold text-emerald-800"></p>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <button onclick="callMatch()" class="tap bg-sky-700 active:bg-sky-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
-                <i class="fa-solid fa-phone-volume text-2xl"></i> 안부 전화
-              </button>
-              <button onclick="checkVisit()" class="tap bg-emerald-700 active:bg-emerald-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
-                <i class="fa-solid fa-house-circle-check text-2xl"></i> 방문 체크
-              </button>
-            </div>
-            <button onclick="showMatchForm()" class="tap w-full bg-gray-200 text-gray-900 text-lg font-bold rounded-2xl">짝꿍 정보 바꾸기</button>
-          </div>
-          <div id="matchForm" class="space-y-3 hidden">
-            <p class="text-xl font-bold text-gray-900">아직 짝꿍 정보가 없어요. 한 번만 넣어 두세요.</p>
-            <input id="matchNameInput" type="text" placeholder="이름 (예: 김영숙)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
-            <input id="matchAreaInput" type="text" placeholder="동네 (예: 행복동)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
-            <input id="matchPhoneInput" type="tel" placeholder="연락처 (예: 010-1234-5678)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
-            <button onclick="saveMatch()" class="tap w-full bg-sky-700 text-white text-xl font-black rounded-2xl shadow">짝꿍 저장하기</button>
-          </div>
-        </section>
-
         <!-- (나-2) 어르신 동네 톡방 (실버 톡) -->
         <section class="bg-white rounded-3xl p-4 border-2 border-yellow-500 shadow-sm space-y-3">
           <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -246,6 +214,38 @@
             <button onclick="sendCareRequest()" class="tap w-full bg-rose-600 active:bg-rose-700 text-white text-2xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
               <i class="fa-solid fa-paper-plane"></i> 요청 보내기
             </button>
+          </div>
+        </section>
+
+        <!-- (다-2) 내 담당 도우미 (맨 아래 배치) -->
+        <section class="bg-white rounded-3xl p-4 border-2 border-sky-500 shadow-sm space-y-3">
+          <h2 class="text-[26px] font-black text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-user-group text-sky-700"></i> 내 담당 도우미
+          </h2>
+          <p class="text-xl text-gray-800">도움을 주시는 담당 도우미분 정보예요.</p>
+          <div id="matchView" class="space-y-3 hidden">
+            <div class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-4 space-y-1">
+              <p class="text-2xl font-black text-gray-900"><i class="fa-solid fa-user text-sky-700"></i> <span id="matchName"></span></p>
+              <p class="text-xl font-bold text-gray-800"><i class="fa-solid fa-location-dot text-sky-700"></i> <span id="matchArea"></span></p>
+              <p class="text-xl font-bold text-gray-800"><i class="fa-solid fa-phone text-sky-700"></i> <span id="matchPhone"></span></p>
+              <p id="matchLastVisit" class="text-lg font-bold text-emerald-800"></p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="callMatch()" class="tap bg-sky-700 active:bg-sky-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
+                <i class="fa-solid fa-phone-volume text-2xl"></i> 도우미 전화
+              </button>
+              <button onclick="checkVisit()" class="tap bg-emerald-700 active:bg-emerald-800 text-white text-xl font-black rounded-2xl flex items-center justify-center gap-2 shadow">
+                <i class="fa-solid fa-house-circle-check text-2xl"></i> 방문 확인
+              </button>
+            </div>
+            <button onclick="showMatchForm()" class="tap w-full bg-gray-200 text-gray-900 text-lg font-bold rounded-2xl">담당 도우미 정보 바꾸기</button>
+          </div>
+          <div id="matchForm" class="space-y-3 hidden">
+            <p class="text-xl font-bold text-gray-900">아직 연결된 도우미가 없어요. 도우미가 배정되거나 직접 저장해 두실 수 있어요.</p>
+            <input id="matchNameInput" type="text" placeholder="도우미 성함 (예: 김영숙 도우미)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
+            <input id="matchAreaInput" type="text" placeholder="활동 동네 (예: 은평구 진관동)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
+            <input id="matchPhoneInput" type="tel" placeholder="도우미 연락처 (예: 010-1234-5678)" class="tap w-full border-2 border-gray-400 rounded-xl px-4 text-xl outline-none focus:border-sky-600">
+            <button onclick="saveMatch()" class="tap w-full bg-sky-700 text-white text-xl font-black rounded-2xl shadow">담당 도우미 저장하기</button>
           </div>
         </section>
 
