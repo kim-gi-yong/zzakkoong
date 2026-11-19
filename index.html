@@ -304,11 +304,12 @@
       <!-- ============ 탭2: 도우미 (우리 동네 도움 목록) ============ -->
       <div id="tab2" class="hidden flex flex-col gap-5">
 
+        <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border-2 border-gray-300 px-4 py-2" style="order: 0">
+          <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel">우리 동네</span></span>
+          <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
+        </div>
+
         <div id="lifeAskBlock" class="hidden space-y-4">
-          <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border-2 border-gray-300 px-4 py-2">
-            <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel">우리 동네</span></span>
-            <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
-          </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button onclick="openLifeRequest()" class="w-full min-h-[92px] bg-red-600 active:bg-red-700 text-white text-[26px] font-black rounded-3xl flex items-center justify-center gap-2.5 shadow-lg px-3">
@@ -1856,7 +1857,7 @@
     }
 
     function changeMyArea() {
-      const v = prompt('사시는 동네를 알려 주세요. (예: 행복동)', myArea());
+      const v = prompt('활동·거주 동네(구·동까지)를 알려 주세요. (예: 은평구 진관동)', myArea());
       if (v === null) return;
       localStorage.setItem('zzakkoong_area', v.trim());
       renderMyArea();
