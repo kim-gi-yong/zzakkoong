@@ -2317,7 +2317,12 @@
         <option value="화면/글씨">👀 화면이나 글씨가 불편해요</option>
         <option value="기능 건의">💡 이런 기능이 있으면 좋겠어요</option>
       </select>
-      <textarea id="fbText" rows="4" placeholder="불편한 점을 편하게 적어 주세요 (예: 버튼이 작아요, 어떤 화면이 안 열려요)" class="w-full px-3.5 py-3 rounded-xl border border-gray-300 text-base font-semibold"></textarea>
+      <button type="button" id="fbVoiceBtn" onclick="toggleFeedbackVoice()" class="w-full bg-indigo-600 active:bg-indigo-700 text-white text-lg font-black py-3.5 rounded-xl shadow flex items-center justify-center gap-2">
+        <i class="fa-solid fa-microphone text-xl"></i>
+        <span id="fbVoiceLabel">말로 편하게 남기기 (터치 후 말씀하세요)</span>
+      </button>
+      <p id="fbVoiceStatus" class="text-sm font-bold text-indigo-700 text-center hidden"></p>
+      <textarea id="fbText" rows="4" placeholder="말씀하시거나 직접 적어 주세요 (예: 버튼이 작아요, 어떤 화면이 안 열려요)" class="w-full px-3.5 py-3 rounded-xl border border-gray-300 text-base font-semibold"></textarea>
       <button type="button" onclick="submitFeedback()" class="w-full bg-rose-600 active:bg-rose-700 text-white text-lg font-black py-3.5 rounded-xl shadow">
         📩 지니에게 바로 접수하기
       </button>
@@ -2325,11 +2330,90 @@
   </div>
 
   <script>
+    let fbRecognition = null;
+    let isFbListening = false;
+
+    function setFbVoiceUI(listening, statusMsg) {
+      isFbListening = listening;
+      const btn = document.getElementById('fbVoiceBtn');
+      const label = document.getElementById('fbVoiceLabel');
+      const st = document.getElementById('fbVoiceStatus');
+      if (btn && label) {
+        if (listening) {
+          btn.classList.remove('bg-indigo-600', 'active:bg-indigo-700');
+          btn.classList.add('bg-rose-600', 'active:bg-rose-700', 'animate-pulse');
+          label.innerText = '듣고 있어요... (말씀 끝나면 멈춤)';
+        } else {
+          btn.classList.remove('bg-rose-600', 'active:bg-rose-700', 'animate-pulse');
+          btn.classList.add('bg-indigo-600', 'active:bg-indigo-700');
+          label.innerText = '말로 편하게 남기기 (터치 후 말씀하세요)';
+        }
+      }
+      if (st) {
+        if (statusMsg) {
+          st.innerText = statusMsg;
+          st.classList.remove('hidden');
+        } else {
+          st.innerText = '';
+          st.classList.add('hidden');
+        }
+      }
+    }
+
+    function stopFeedbackVoice() {
+      if (fbRecognition && isFbListening) {
+        try { fbRecognition.stop(); } catch (e) {}
+      }
+      setFbVoiceUI(false, '');
+    }
+
+    function toggleFeedbackVoice() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        setFbVoiceUI(false, '이 브라우저에서는 음성 입력이 지원되지 않아요. 아래 칸에 직접 적어 주세요.');
+        return;
+      }
+      if (isFbListening) {
+        stopFeedbackVoice();
+        return;
+      }
+      if (!fbRecognition) {
+        fbRecognition = new SR();
+        fbRecognition.lang = 'ko-KR';
+        fbRecognition.interimResults = false;
+        fbRecognition.continuous = false;
+        fbRecognition.onstart = () => {
+          setFbVoiceUI(true, '지금 불편한 점을 편하게 말씀하세요!');
+        };
+        fbRecognition.onresult = (event) => {
+          const spoken = (event.results?.[0]?.[0]?.transcript || '').trim();
+          const ta = document.getElementById('fbText');
+          if (ta && spoken) {
+            ta.value = ta.value.trim() ? `${ta.value.trim()} ${spoken}` : spoken;
+          }
+          setFbVoiceUI(false, spoken ? '말씀하신 내용이 아래에 적혔어요! 확인 후 접수 버튼을 눌러 주세요.' : '');
+        };
+        fbRecognition.onerror = () => {
+          setFbVoiceUI(false, '잘 듣지 못했어요. 다시 한 번 눌러 말씀해 주세요.');
+        };
+        fbRecognition.onend = () => {
+          if (isFbListening) setFbVoiceUI(false, '');
+        };
+      }
+      try {
+        fbRecognition.start();
+      } catch (e) {
+        setFbVoiceUI(false, '마이크 준비 중이에요. 잠시 후 다시 눌러 주세요.');
+      }
+    }
+
     function openFeedbackModal() {
+      setFbVoiceUI(false, '');
       const m = document.getElementById('feedbackModal');
       if (m) m.classList.remove('hidden');
     }
     function closeFeedbackModal() {
+      stopFeedbackVoice();
       const m = document.getElementById('feedbackModal');
       if (m) m.classList.add('hidden');
     }
