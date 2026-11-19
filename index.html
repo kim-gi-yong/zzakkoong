@@ -594,17 +594,20 @@
 
     // 카카오 택시 앱 연결 로직
     function openKakaoTaxi() {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
+      const ua = navigator.userAgent || navigator.vendor || window.opera;
+      const isAndroid = /android/i.test(ua);
+      const isIOS = /iPad|iPhone|iPod/i.test(ua) && !window.MSStream;
+      if (isAndroid) {
         speakText('카카오 택시 앱을 연결합니다.');
-        location.href = "kakaot://";
+        window.location.href = "intent://#Intent;scheme=kakaot;package=com.kakao.taxi;S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.kakao.taxi;end";
+      } else if (isIOS) {
+        speakText('카카오 택시 앱을 연결합니다.');
+        const start = Date.now();
+        window.location.href = "kakaot://";
         setTimeout(() => {
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            if (/android/i.test(userAgent)) {
-                location.href = "market://details?id=com.kakao.taxi";
-            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                location.href = "https://itunes.apple.com/kr/app/id981110422";
-            }
+          if (!document.hidden && Date.now() - start < 2500) {
+            window.location.href = "https://apps.apple.com/kr/app/id981110422";
+          }
         }, 1500);
       } else {
         speakText('택시 호출은 스마트폰의 카카오 T 앱에서만 가능합니다.');
