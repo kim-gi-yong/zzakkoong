@@ -51,8 +51,13 @@
 
     <main class="p-4">
 
-      <!-- ============ 탭1: 노노케어 도움매칭 ============ -->
+      <!-- ============ 탭1: 도움필요 ============ -->
       <div id="tab1" class="space-y-5">
+
+        <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border-2 border-gray-300 px-4 py-2">
+          <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel1">내 동네를 넣어 주세요</span></span>
+          <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
+        </div>
 
         <!-- (가) 내 안심 상태 -->
         <section class="bg-white rounded-3xl p-4 border-2 border-emerald-600 shadow-sm space-y-4">
@@ -1862,7 +1867,13 @@
       localStorage.setItem('zzakkoong_area', v.trim());
       renderMyArea();
     }
-    function renderMyArea() { document.getElementById('myAreaLabel').innerText = myArea() || '우리 동네'; }
+    function renderMyArea() {
+      const label = myArea() || '내 동네를 넣어 주세요';
+      const el = document.getElementById('myAreaLabel');
+      const el1 = document.getElementById('myAreaLabel1');
+      if (el) el.innerText = label;
+      if (el1) el1.innerText = label;
+    }
 
     /* =====================================================
        탭3 — 두뇌 사랑방
