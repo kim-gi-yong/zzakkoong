@@ -55,8 +55,8 @@
       <div id="tab1" class="space-y-5">
 
         <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border-2 border-gray-300 px-4 py-2">
-          <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel1">내 동네를 넣어 주세요</span></span>
-          <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
+          <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel1">내 정보·동네를 넣어 주세요</span></span>
+          <button onclick="openProfileModal('receiver')" class="tap shrink-0 bg-emerald-100 text-emerald-950 text-lg font-bold px-4 rounded-xl whitespace-nowrap">내 정보·동네</button>
         </div>
 
         <!-- (가) 내 안심 상태 -->
@@ -311,7 +311,7 @@
 
         <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border-2 border-gray-300 px-4 py-2" style="order: 0">
           <span class="text-xl font-bold text-gray-900 min-w-0 truncate"><i class="fa-solid fa-location-dot text-rose-600"></i> <span id="myAreaLabel">우리 동네</span></span>
-          <button onclick="changeMyArea()" class="tap shrink-0 bg-gray-200 text-gray-900 text-lg font-bold px-4 rounded-xl whitespace-nowrap">동네 넣기</button>
+          <button onclick="openProfileModal('giver')" class="tap shrink-0 bg-emerald-100 text-emerald-950 text-lg font-bold px-4 rounded-xl whitespace-nowrap">내 정보·동네</button>
         </div>
 
         <div id="lifeAskBlock" class="hidden space-y-4">
@@ -462,6 +462,32 @@
     <!-- 알림 토스트 -->
     <div id="toast" class="hidden fixed left-0 right-0 z-[60] flex justify-center px-4 pointer-events-none" style="bottom: 110px;">
       <div id="toastText" class="max-w-2xl w-full bg-gray-950 text-white text-xl font-bold rounded-2xl px-5 py-4 shadow-2xl text-center"></div>
+    </div>
+
+    <!-- 첫 1회 내 정보(개인정보) 등록 모달 -->
+    <div id="profileModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl w-full max-w-md p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
+        <h3 id="profileModalTitle" class="text-2xl font-black text-gray-900">👤 내 정보 등록 (처음 1회)</h3>
+        <p id="profileModalDesc" class="text-base font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 leading-snug">
+          🔒 성함·상세주소·연락처는 전체 목록에 공개되지 않고, 서로 연결된 뒤에만 상대방에게 보입니다.
+        </p>
+        <input id="profName" type="text" placeholder="성함 (예: 김기용)" class="tap w-full border-2 border-gray-300 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+        <input id="profPhone" type="tel" placeholder="연락처 (예: 010-1234-5678)" class="tap w-full border-2 border-gray-300 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+        <input id="profArea" type="text" placeholder="거주·활동 동네 구/동 (예: 은평구 진관동)" class="tap w-full border-2 border-gray-300 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+        <div id="profReceiverFields" class="space-y-2">
+          <input id="profDetailAddr" type="text" placeholder="상세주소 (예: 101동 502호 · 연결 시만 공개)" class="tap w-full border-2 border-gray-300 rounded-xl px-4 text-xl outline-none focus:border-emerald-600">
+        </div>
+        <div id="profGiverFields" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 space-y-2">
+          <p class="text-base font-black text-amber-950">💰 감사 수고비 받을 계좌 (선택 · 연결 시만 공개)</p>
+          <input id="profBank" type="text" placeholder="은행 (예: 농협)" class="tap w-full border-2 border-gray-300 bg-white rounded-xl px-3 text-lg outline-none focus:border-emerald-600">
+          <input id="profAccount" type="text" placeholder="계좌번호 (- 없이)" class="tap w-full border-2 border-gray-300 bg-white rounded-xl px-3 text-lg outline-none focus:border-emerald-600">
+          <input id="profHolder" type="text" placeholder="예금주" class="tap w-full border-2 border-gray-300 bg-white rounded-xl px-3 text-lg outline-none focus:border-emerald-600">
+        </div>
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button type="button" onclick="closeProfileModal()" class="tap bg-gray-200 text-gray-900 text-xl font-bold rounded-2xl">나중에</button>
+          <button type="button" onclick="saveMyProfile()" class="tap bg-emerald-700 text-white text-xl font-black rounded-2xl shadow">저장하고 시작</button>
+        </div>
+      </div>
     </div>
 
     <!-- 역할 선택 화면 -->
@@ -1102,6 +1128,7 @@
       }
       if (Array.isArray(helps)) {
         sharedHelps = helps.map(row => ({ ...(row.payload || {}), dbId: row.id }));
+        syncMatchedHelperToElder(sharedHelps);
         renderRequests();
       }
       if (Array.isArray(scores)) {
@@ -1157,7 +1184,12 @@
       document.getElementById('roleScreen').classList.add('hidden');
       applyRole();
       selectTab(role === 'giver' ? 2 : 1);
-      showToast(role === 'giver' ? '고맙습니다! 도움이 필요한 이웃을 먼저 보여드릴게요.' : '언제든 편하게 도움을 요청하세요.', true);
+      const p = myProfile();
+      if (!p.name || !p.phone || !p.area) {
+        openProfileModal(role);
+      } else {
+        showToast(role === 'giver' ? '고맙습니다! 도움이 필요한 이웃을 먼저 보여드릴게요.' : '언제든 편하게 도움을 요청하세요.', true);
+      }
     }
 
     function applyRole() {
@@ -1322,6 +1354,12 @@
     }
 
     async function sendCareRequest() {
+      const p = myProfile();
+      if (!p.name || !p.phone || !p.area) {
+        showToast('먼저 내 정보(성함·연락처·동네)를 한 번만 입력해 주세요.', true);
+        openProfileModal('receiver');
+        return;
+      }
       const voiceEl = document.getElementById('careVoiceText');
       const voiceText = (voiceEl?.value || '').trim();
       if (!careService && voiceText) classifyCareVoice(voiceText);
@@ -1329,7 +1367,9 @@
       if (!careSlot) { showToast('② 시간을 골라 주세요.', true); return; }
       const req = {
         id: Date.now(), kind: 'care', category: careService, slot: careSlot,
-        text: voiceText, photo: '', area: myArea(), status: '기다리는 중', createdAt: new Date().toISOString()
+        text: voiceText, photo: '', area: p.area || myArea(),
+        requesterName: p.name, requesterPhone: p.phone, requesterAddr: p.detailAddr || '',
+        status: '기다리는 중', createdAt: new Date().toISOString()
       };
       const list = lsGet('zzakkoong_requests', []);
       list.push(req);
@@ -1800,6 +1840,19 @@
             </div>
             <p class="text-lg font-bold text-gray-800">${isOffer && r.helperName ? `<i class="fa-solid fa-user text-emerald-700"></i> ${esc(r.helperName)} · ` : ''}<i class="fa-solid fa-location-dot"></i> ${esc(r.area || '동네 미입력')} · <i class="fa-regular fa-clock"></i> ${esc(fmtShort(r.createdAt))}${r.slot ? ' · ' + esc(r.slot) : ''}</p>
             ${(r.text || r.detail) ? `<p class="text-xl font-bold text-gray-900">${esc(r.text || r.detail || '')}</p>` : ''}
+            ${!isOffer ? (
+              r.status === '기다리는 중'
+                ? `<p class="inline-block bg-gray-100 text-gray-800 border border-gray-300 text-sm font-bold px-3 py-1 rounded-xl">🔒 성함·상세주소·연락처는 [제가 도와드릴게요] 연결 시 공개</p>`
+                : (r.requesterName || r.requesterAddr || r.requesterPhone
+                    ? `<div class="bg-sky-50 border-2 border-sky-400 rounded-2xl p-3 space-y-1.5">
+                        <p class="text-sm font-black text-sky-900">🔓 연결 완료 · 어르신 안심 정보</p>
+                        ${r.requesterName ? `<p class="text-lg font-black text-gray-950">👤 ${esc(r.requesterName)} 어르신</p>` : ''}
+                        ${r.requesterAddr ? `<p class="text-lg font-bold text-gray-900">🏠 ${esc(r.area || '')} ${esc(r.requesterAddr)}</p>` : ''}
+                        ${r.requesterPhone ? `<div class="flex items-center justify-between gap-2 pt-1"><span class="text-lg font-black text-sky-900">📞 ${esc(r.requesterPhone)}</span><a href="tel:${esc(r.requesterPhone)}" class="tap bg-sky-700 text-white text-base font-black px-3.5 py-1.5 rounded-xl">전화 걸기</a></div>` : ''}
+                        ${r.helperName ? `<p class="text-sm font-bold text-emerald-800 pt-1">🤝 연결된 도우미: ${esc(r.helperName)}${r.helperPhone ? ' (' + esc(r.helperPhone) + ')' : ''}</p>` : ''}
+                      </div>`
+                    : (r.helperName ? `<p class="text-sm font-bold text-emerald-800">🤝 연결된 도우미: ${esc(r.helperName)}</p>` : ''))
+            ) : ''}
             ${isOffer && r.account ? (
               r.status === '기다리는 중'
                 ? `<p class="inline-block bg-amber-100 text-amber-900 border border-amber-400 text-sm font-black px-3 py-1 rounded-xl">💰 용돈 계좌 등록됨 (짝꿍 연결 시 공개)</p>`
@@ -1822,20 +1875,55 @@
     }
 
     function connectMatch(id, isOffer) {
+      const p = myProfile();
+      if (!isOffer && (!p.name || !p.phone)) {
+        showToast('먼저 도우미 성함·연락처를 한 번만 입력해 주세요.', true);
+        openProfileModal('giver');
+        return;
+      }
       const src = Array.isArray(sharedHelps) ? sharedHelps : lsGet('zzakkoong_requests', []);
       const r = src.find(x => x.id === id);
       if (!r) return;
       r.status = '짝꿍 찾음';
-      if (r.dbId) sbUpdate(r.dbId, { ...r, status: '짝꿍 찾음' }).then(() => syncAllFromSupabase());
+      if (!isOffer) {
+        r.helperName = p.name;
+        r.helperPhone = p.phone;
+        r.helperArea = p.area || myArea();
+        if (p.bank) r.bank = p.bank;
+        if (p.account) r.account = p.account;
+        if (p.holder) r.holder = p.holder;
+      }
+      if (r.dbId) sbUpdate(r.dbId, { ...r }).then(() => syncAllFromSupabase());
       const local = lsGet('zzakkoong_requests', []);
       const lr = local.find(x => x.id === id);
-      if (lr) { lr.status = '짝꿍 찾음'; saveRequestsSafe(local); }
+      if (lr) {
+        Object.assign(lr, { status: '짝꿍 찾음', helperName: r.helperName, helperPhone: r.helperPhone, helperArea: r.helperArea });
+        saveRequestsSafe(local);
+      }
       renderRequests();
       const msg = isOffer
         ? `${r.helperName || '이웃'} 님께 도움 부탁이 연결되었어요!`
-        : '고맙습니다! 짝꿍으로 연결되었어요.';
+        : '연결 완료! 어르신 상세주소와 연락처가 열렸어요.';
       showToast(msg, true);
       speakText(msg);
+    }
+
+    function syncMatchedHelperToElder(helps) {
+      const myReqs = lsGet('zzakkoong_requests', []);
+      if (!myReqs.length || !Array.isArray(helps)) return;
+      const myIds = new Set(myReqs.map(x => x.id));
+      const matched = helps.slice().reverse().find(h => myIds.has(h.id) && h.status !== '기다리는 중' && h.helperName);
+      if (!matched) return;
+      const cur = lsGet('zzakkoong_match', {}) || {};
+      if (cur.name === matched.helperName && cur.phone === (matched.helperPhone || '')) return;
+      lsSet('zzakkoong_match', {
+        name: matched.helperName,
+        area: matched.helperArea || matched.area || '',
+        phone: matched.helperPhone || '',
+        lastVisit: cur.lastVisit || '',
+        savedAt: new Date().toISOString()
+      });
+      if (typeof renderMatch === 'function') renderMatch();
     }
 
     function setRequestStatus(id, status) {
@@ -1861,14 +1949,53 @@
       renderRequests();
     }
 
-    function changeMyArea() {
-      const v = prompt('활동·거주 동네(구·동까지)를 알려 주세요. (예: 은평구 진관동)', myArea());
-      if (v === null) return;
-      localStorage.setItem('zzakkoong_area', v.trim());
+    function myProfile() { return lsGet('zzakkoong_my_profile', {}) || {}; }
+
+    let profileModalRole = 'receiver';
+    function openProfileModal(role) {
+      profileModalRole = role || localStorage.getItem('zzakkoong_role') || 'receiver';
+      const p = myProfile();
+      document.getElementById('profName').value = p.name || '';
+      document.getElementById('profPhone').value = p.phone || '';
+      document.getElementById('profArea').value = p.area || myArea() || '';
+      document.getElementById('profDetailAddr').value = p.detailAddr || '';
+      document.getElementById('profBank').value = p.bank || '';
+      document.getElementById('profAccount').value = p.account || '';
+      document.getElementById('profHolder').value = p.holder || '';
+      const isGiver = profileModalRole === 'giver';
+      document.getElementById('profileModalTitle').innerText = isGiver ? '💚 도우미 정보 등록 (처음 1회)' : '👤 내 정보 등록 (처음 1회)';
+      document.getElementById('profReceiverFields').classList.toggle('hidden', isGiver);
+      document.getElementById('profGiverFields').classList.toggle('hidden', !isGiver);
+      document.getElementById('profileModal').classList.remove('hidden');
+    }
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.add('hidden');
+    }
+    function saveMyProfile() {
+      const name = document.getElementById('profName').value.trim();
+      const phone = document.getElementById('profPhone').value.trim();
+      const area = document.getElementById('profArea').value.trim();
+      const detailAddr = document.getElementById('profDetailAddr').value.trim();
+      const bank = document.getElementById('profBank').value.trim();
+      const account = document.getElementById('profAccount').value.trim();
+      const holder = document.getElementById('profHolder').value.trim();
+      if (!name) { showToast('성함을 적어 주세요.', true); return; }
+      if (!phone) { showToast('연락처를 적어 주세요.', true); return; }
+      if (!area) { showToast('거주·활동 동네(구·동)를 적어 주세요.', true); return; }
+      lsSet('zzakkoong_my_profile', { name, phone, area, detailAddr, bank, account, holder });
+      localStorage.setItem('zzakkoong_area', area);
       renderMyArea();
+      closeProfileModal();
+      showToast('내 정보를 저장했어요! 연결될 때만 상대방에게 안전하게 공개됩니다.', true);
+    }
+
+    function changeMyArea() {
+      openProfileModal();
     }
     function renderMyArea() {
-      const label = myArea() || '내 동네를 넣어 주세요';
+      const p = myProfile();
+      const area = p.area || myArea();
+      const label = area ? (p.name ? `${area} · ${p.name}` : area) : '내 정보·동네를 넣어 주세요';
       const el = document.getElementById('myAreaLabel');
       const el1 = document.getElementById('myAreaLabel1');
       if (el) el.innerText = label;
